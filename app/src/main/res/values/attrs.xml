@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <declare-styleable name="myTes">
+
+        <attr name="per">
+            <enum name="e1" value="1"/>
+            <enum name="e2" value="2"/>
+        </attr>
+
+        <attr name="name" format="string"/>
+
+    </declare-styleable>
+
+</resources>
