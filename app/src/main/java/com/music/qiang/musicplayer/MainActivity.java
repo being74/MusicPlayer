@@ -1,39 +1,31 @@
 package com.music.qiang.musicplayer;
 
 import android.content.Intent;
-import android.database.Cursor;
 import android.os.Bundle;
-import android.provider.MediaStore;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.view.View;
-import android.support.design.widget.NavigationView;
-import android.support.v4.view.GravityCompat;
-import android.support.v4.widget.DrawerLayout;
-import android.support.v7.app.ActionBarDrawerToggle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentStatePagerAdapter;
+import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.Menu;
-import android.view.MenuItem;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Toast;
 
-import com.music.qiang.musicplayer.model.MusicFile;
-import com.music.qiang.musicplayer.ui.activity.MusicPlayActivity;
 import com.music.qiang.musicplayer.ui.activity.SettingsActivity;
-import com.music.qiang.musicplayer.ui.adapter.MusicListAdapter;
+import com.music.qiang.musicplayer.ui.fragment.AlbumListFragment;
+import com.music.qiang.musicplayer.ui.fragment.ItemFragment;
+import com.music.qiang.musicplayer.ui.fragment.MusicListFragment;
+import com.music.qiang.musicplayer.ui.fragment.dummy.DummyContent;
 
-import java.util.ArrayList;
-
-public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity implements ItemFragment.OnListFragmentInteractionListener {
 
     // ****************Views*******************
-    private RecyclerView rv_music_list;
-
+    private Toolbar toolbar;
+    private ViewPager vp_activity_main;
+    private RadioGroup rg_activity_main_tabs;
+    private RadioButton rb_activity_main_tabs_music, rb_activity_main_tabs_album, rb_activity_main_tabs_artist, rb_activity_main_tabs_more;
+    private RadioButton[] radios;
     // ****************对象********************
-    private RecyclerView.LayoutManager mLayoutManager;
-    private MusicListAdapter musicListAdapter;
-    private ArrayList<MusicFile> musicFiles;
 
     // ****************数据********************
 
@@ -42,127 +34,116 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
 
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        ActionBarDrawerToggle toggle = new ActionBarDrawerToggle(
-                this, drawer, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
-        drawer.setDrawerListener(toggle);
-        toggle.syncState();
+        initViews();
+        ininData();
+        registerListener();
 
-        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
-        navigationView.setNavigationItemSelectedListener(this);
-
-        rv_music_list = (RecyclerView) findViewById(R.id.rv_content_main_music_list);
-        initRecyclerView();
     }
 
-    private void initRecyclerView() {
-        // 1. 创建线性LayoutManager
-        mLayoutManager = new LinearLayoutManager(this);
-        rv_music_list.setLayoutManager(mLayoutManager);
-        // 2. 如果可以确定每个item的高度是固定的，设置这个选项可以提高性能
-        rv_music_list.setHasFixedSize(true);
-        // 3. 创建并设置适配器
-        String[] data = {"歌曲1", "歌曲2", "歌曲3", "歌曲4", "歌曲5", "歌曲6", "歌曲7", "歌曲8", "歌曲9", "歌曲10", "歌曲11", "歌曲12"};
-        getMusicList();
-        musicListAdapter = new MusicListAdapter(musicFiles);
-        rv_music_list.setAdapter(musicListAdapter);
-        // 4. 设置点击事件
-        musicListAdapter.setOnItemClickListener(new MusicListAdapter.MyItemClickListener() {
+    private void initViews() {
+        vp_activity_main = (ViewPager) findViewById(R.id.vp_activity_main);
+        rg_activity_main_tabs = (RadioGroup) findViewById(R.id.rg_activity_main_tabs);
+        rb_activity_main_tabs_music = (RadioButton) findViewById(R.id.rb_activity_main_tabs_music);
+        rb_activity_main_tabs_album = (RadioButton) findViewById(R.id.rb_activity_main_tabs_album);
+        rb_activity_main_tabs_artist = (RadioButton) findViewById(R.id.rb_activity_main_tabs_artist);
+    }
+
+    private void ininData() {
+        vp_activity_main.setAdapter(new HomePagerAdapter(getSupportFragmentManager()));
+        radios = new RadioButton[3];
+        radios[0] = rb_activity_main_tabs_music;
+        radios[1] = rb_activity_main_tabs_album;
+        radios[2] = rb_activity_main_tabs_artist;
+    }
+
+    private void registerListener() {
+        rg_activity_main_tabs.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
-            public void onItemClickListener(View view, int position) {
-                //Toast.makeText(MainActivity.this, "第" + position + "个", Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(MainActivity.this, MusicPlayActivity.class));
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                switch (checkedId) {
+                    case R.id.rb_activity_main_tabs_music:
+                        vp_activity_main.setCurrentItem(0);
+                        break;
+                    case R.id.rb_activity_main_tabs_album:
+                        vp_activity_main.setCurrentItem(1);
+                        break;
+                    case R.id.rb_activity_main_tabs_artist:
+                        vp_activity_main.setCurrentItem(2);
+                        break;
+                    case R.id.rb_activity_main_tabs_more:
+                        startActivity(new Intent(MainActivity.this, SettingsActivity.class));
+                        break;
+                }
+            }
+        });
+
+        vp_activity_main.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+
             }
 
             @Override
-            public void onItemLongClickListener(View view, int position) {
+            public void onPageSelected(int position) {
+                radios[position].setChecked(true);
+            }
+
+            @Override
+            public void onPageScrollStateChanged(int state) {
 
             }
         });
     }
 
-    /**
-     *
-     */
-    private void getMusicList() {
-        musicFiles = new ArrayList<>();
-        Cursor cursor = getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, null, null,
-                MediaStore.Audio.Media.DEFAULT_SORT_ORDER);
-        cursor.moveToFirst();
-        for (int i = 0; i < cursor.getCount(); i++) {
-            MusicFile file = new MusicFile();
-            file.musicId = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID));
-            file.musicName = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE));
-            file.musicAlbum = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM));
-            file.musicArtist = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST));
-            file.musicPath = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA));
-            file.musicSize = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE));
-            file.musicTime = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION));
-            musicFiles.add(file);
-            cursor.moveToNext();
-        }
-        cursor.close();
-    }
-
     @Override
     public void onBackPressed() {
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        if (drawer.isDrawerOpen(GravityCompat.START)) {
-            drawer.closeDrawer(GravityCompat.START);
-        } else {
-            super.onBackPressed();
+    }
+
+    public class HomePagerAdapter extends FragmentStatePagerAdapter {
+
+        public HomePagerAdapter(android.support.v4.app.FragmentManager fm) {
+            super(fm);
         }
+
+        private final String[] TITLES = {"歌曲", "专辑", "艺术家"};
+
+        @Override
+        public CharSequence getPageTitle(int position) {
+            return TITLES[position];
+        }
+
+        @Override
+        public int getCount() {
+            return TITLES.length;
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            Fragment fragment;
+            switch (position) {
+                case 0:
+                    fragment = new MusicListFragment();
+                    break;
+                case 1:
+                    fragment = new AlbumListFragment();
+                    break;
+                case 2:
+                    fragment = new ItemFragment();
+                    break;
+                default:
+                    fragment = new ItemFragment();
+                    break;
+            }
+            return fragment;
+        }
+
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            Intent intent = new Intent(this, SettingsActivity.class);
-            startActivity(intent);
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-    @SuppressWarnings("StatementWithEmptyBody")
-    @Override
-    public boolean onNavigationItemSelected(MenuItem item) {
-        // Handle navigation view item clicks here.
-        int id = item.getItemId();
-
-        if (id == R.id.nav_camera) {
-            // Handle the camera action
-        } else if (id == R.id.nav_gallery) {
-
-        } else if (id == R.id.nav_slideshow) {
-
-        } else if (id == R.id.nav_manage) {
-
-        } else if (id == R.id.nav_share) {
-
-        } else if (id == R.id.nav_send) {
-
-        }
-
-        DrawerLayout drawer = (DrawerLayout) findViewById(R.id.drawer_layout);
-        drawer.closeDrawer(GravityCompat.START);
-        return true;
+    public void onListFragmentInteraction(DummyContent.DummyItem item) {
+        Toast.makeText(this, "hello", Toast.LENGTH_SHORT).show();
     }
 }
