@@ -10,4 +10,5 @@
     <dimen name="bottom_tab_font_size">12.0sp</dimen>
     <dimen name="bottom_tab_padding_up">4.0dip</dimen>
     <dimen name="bottom_tab_padding_drawable">1.0dip</dimen>
+    <dimen name="text_margin">16dp</dimen>
 </resources>
