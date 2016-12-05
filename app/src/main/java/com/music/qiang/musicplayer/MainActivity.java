@@ -1,6 +1,5 @@
 package com.music.qiang.musicplayer;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentStatePagerAdapter;
@@ -11,9 +10,9 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
 
-import com.music.qiang.musicplayer.ui.activity.SettingsActivity;
 import com.music.qiang.musicplayer.ui.fragment.AlbumListFragment;
 import com.music.qiang.musicplayer.ui.fragment.ItemFragment;
+import com.music.qiang.musicplayer.ui.fragment.MoreFragment;
 import com.music.qiang.musicplayer.ui.fragment.MusicListFragment;
 import com.music.qiang.musicplayer.ui.fragment.dummy.DummyContent;
 
@@ -40,7 +39,6 @@ public class MainActivity extends AppCompatActivity implements ItemFragment.OnLi
         initViews();
         ininData();
         registerListener();
-
     }
 
     private void initViews() {
@@ -49,14 +47,17 @@ public class MainActivity extends AppCompatActivity implements ItemFragment.OnLi
         rb_activity_main_tabs_music = (RadioButton) findViewById(R.id.rb_activity_main_tabs_music);
         rb_activity_main_tabs_album = (RadioButton) findViewById(R.id.rb_activity_main_tabs_album);
         rb_activity_main_tabs_artist = (RadioButton) findViewById(R.id.rb_activity_main_tabs_artist);
+        rb_activity_main_tabs_more = (RadioButton) findViewById(R.id.rb_activity_main_tabs_more);
     }
 
     private void ininData() {
         vp_activity_main.setAdapter(new HomePagerAdapter(getSupportFragmentManager()));
-        radios = new RadioButton[3];
+        radios = new RadioButton[4];
         radios[0] = rb_activity_main_tabs_music;
         radios[1] = rb_activity_main_tabs_album;
         radios[2] = rb_activity_main_tabs_artist;
+        radios[3] = rb_activity_main_tabs_more;
+        radios[0].setChecked(true);
     }
 
     private void registerListener() {
@@ -74,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements ItemFragment.OnLi
                         vp_activity_main.setCurrentItem(2);
                         break;
                     case R.id.rb_activity_main_tabs_more:
-                        startActivity(new Intent(MainActivity.this, SettingsActivity.class));
+                        vp_activity_main.setCurrentItem(3);
                         break;
                 }
             }
@@ -108,7 +109,7 @@ public class MainActivity extends AppCompatActivity implements ItemFragment.OnLi
             super(fm);
         }
 
-        private final String[] TITLES = {"歌曲", "专辑", "艺术家"};
+        private final String[] TITLES = {"歌曲", "专辑", "艺术家", "更多"};
 
         @Override
         public CharSequence getPageTitle(int position) {
@@ -132,6 +133,9 @@ public class MainActivity extends AppCompatActivity implements ItemFragment.OnLi
                     break;
                 case 2:
                     fragment = new ItemFragment();
+                    break;
+                case 3:
+                    fragment = new MoreFragment();
                     break;
                 default:
                     fragment = new ItemFragment();
