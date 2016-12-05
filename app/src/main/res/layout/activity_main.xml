@@ -1,25 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/drawer_layout"
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    tools:openDrawer="start">
+    android:orientation="vertical">
 
     <include
+        android:id="@+id/in_app_bar_main"
         layout="@layout/app_bar_main"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="wrap_content"/>
 
-    <android.support.design.widget.NavigationView
-        android:id="@+id/nav_view"
-        android:layout_width="wrap_content"
+    <android.support.v4.view.ViewPager
+        android:id="@+id/vp_activity_main"
+        android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="start"
-        android:fitsSystemWindows="true"
-        app:headerLayout="@layout/nav_header_main"
-        app:menu="@menu/activity_main_drawer" />
+        android:layout_above="@+id/rg_activity_main_tabs"
+        android:layout_below="@id/in_app_bar_main"/>
 
-</android.support.v4.widget.DrawerLayout>
+    <RadioGroup
+        android:id="@+id/rg_activity_main_tabs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:background="@color/colorGrayFa"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/rb_activity_main_tabs_music"
+            style="@style/main_tab_bottom"
+            android:drawableTop="@mipmap/ic_main_tab_music"
+            android:text="歌曲"
+            android:textColor="@drawable/selector_main_tab_txt_color"/>
+
+        <RadioButton
+            android:id="@+id/rb_activity_main_tabs_album"
+            style="@style/main_tab_bottom"
+            android:drawableTop="@mipmap/ic_main_tab_album"
+            android:text="专辑"
+            android:textColor="@drawable/selector_main_tab_txt_color"/>
+
+        <RadioButton
+            android:id="@+id/rb_activity_main_tabs_artist"
+            style="@style/main_tab_bottom"
+            android:drawableTop="@mipmap/ic_main_tab_artist"
+            android:text="艺术家"
+            android:textColor="@drawable/selector_main_tab_txt_color"/>
+
+        <RadioButton
+            android:id="@+id/rb_activity_main_tabs_more"
+            style="@style/main_tab_bottom"
+            android:drawableTop="@mipmap/ic_main_tab_more"
+            android:text="更多"
+            android:textColor="@drawable/selector_main_tab_txt_color"/>
+    </RadioGroup>
+
+</RelativeLayout>
