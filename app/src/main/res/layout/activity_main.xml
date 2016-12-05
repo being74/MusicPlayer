@@ -30,28 +30,28 @@
         <RadioButton
             android:id="@+id/rb_activity_main_tabs_music"
             style="@style/main_tab_bottom"
-            android:drawableTop="@mipmap/ic_main_tab_music"
+            android:drawableTop="@drawable/selector_main_tab_music"
             android:text="歌曲"
             android:textColor="@drawable/selector_main_tab_txt_color"/>
 
         <RadioButton
             android:id="@+id/rb_activity_main_tabs_album"
             style="@style/main_tab_bottom"
-            android:drawableTop="@mipmap/ic_main_tab_album"
+            android:drawableTop="@drawable/selector_main_tab_album"
             android:text="专辑"
             android:textColor="@drawable/selector_main_tab_txt_color"/>
 
         <RadioButton
             android:id="@+id/rb_activity_main_tabs_artist"
             style="@style/main_tab_bottom"
-            android:drawableTop="@mipmap/ic_main_tab_artist"
+            android:drawableTop="@drawable/selector_main_tab_artist"
             android:text="艺术家"
             android:textColor="@drawable/selector_main_tab_txt_color"/>
 
         <RadioButton
             android:id="@+id/rb_activity_main_tabs_more"
             style="@style/main_tab_bottom"
-            android:drawableTop="@mipmap/ic_main_tab_more"
+            android:drawableTop="@drawable/selector_main_tab_more"
             android:text="更多"
             android:textColor="@drawable/selector_main_tab_txt_color"/>
     </RadioGroup>
