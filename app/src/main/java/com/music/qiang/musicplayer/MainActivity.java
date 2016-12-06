@@ -101,6 +101,7 @@ public class MainActivity extends AppCompatActivity implements ItemFragment.OnLi
 
     @Override
     public void onBackPressed() {
+        super.onBackPressed();
     }
 
     public class HomePagerAdapter extends FragmentStatePagerAdapter {

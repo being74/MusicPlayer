@@ -84,6 +84,11 @@ public class HelloIntentService extends IntentService {
         context.startService(intent);
     }
 
+    /**
+     * IntentService会使用一个新的线程处理在该方法下处理耗时任务
+     *
+     * @param intent
+     */
     @Override
     protected void onHandleIntent(Intent intent) {
         if (intent != null) {
