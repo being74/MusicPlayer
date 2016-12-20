@@ -1,11 +1,14 @@
 package com.music.qiang.musicplayer;
 
 import android.os.Bundle;
+import android.support.annotation.NonNull;
+import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentStatePagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.MenuItem;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.Toast;
@@ -24,6 +27,7 @@ public class MainActivity extends AppCompatActivity implements ItemFragment.OnLi
     private RadioGroup rg_activity_main_tabs;
     private RadioButton rb_activity_main_tabs_music, rb_activity_main_tabs_album, rb_activity_main_tabs_artist, rb_activity_main_tabs_more;
     private RadioButton[] radios;
+    private BottomNavigationView nav_activity_main;
     // ****************对象********************
 
     // ****************数据********************
@@ -48,6 +52,7 @@ public class MainActivity extends AppCompatActivity implements ItemFragment.OnLi
         rb_activity_main_tabs_album = (RadioButton) findViewById(R.id.rb_activity_main_tabs_album);
         rb_activity_main_tabs_artist = (RadioButton) findViewById(R.id.rb_activity_main_tabs_artist);
         rb_activity_main_tabs_more = (RadioButton) findViewById(R.id.rb_activity_main_tabs_more);
+        nav_activity_main = (BottomNavigationView) findViewById(R.id.nav_activity_main);
     }
 
     private void ininData() {
@@ -61,7 +66,7 @@ public class MainActivity extends AppCompatActivity implements ItemFragment.OnLi
     }
 
     private void registerListener() {
-        rg_activity_main_tabs.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+        /*rg_activity_main_tabs.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 switch (checkedId) {
@@ -79,6 +84,27 @@ public class MainActivity extends AppCompatActivity implements ItemFragment.OnLi
                         break;
                 }
             }
+        });*/
+
+        nav_activity_main.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
+            @Override
+            public boolean onNavigationItemSelected(@NonNull MenuItem item) {
+                switch (item.getItemId()) {
+                    case R.id.main_bottom_nav_music:
+                        vp_activity_main.setCurrentItem(0);
+                        break;
+                    case R.id.main_bottom_nav_album:
+                        vp_activity_main.setCurrentItem(1);
+                        break;
+                    case R.id.main_bottom_nav_artist:
+                        vp_activity_main.setCurrentItem(2);
+                        break;
+                    case R.id.main_bottom_nav_more:
+                        vp_activity_main.setCurrentItem(3);
+                        break;
+                }
+                return true;
+            }
         });
 
         vp_activity_main.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -90,6 +116,7 @@ public class MainActivity extends AppCompatActivity implements ItemFragment.OnLi
             @Override
             public void onPageSelected(int position) {
                 radios[position].setChecked(true);
+                nav_activity_main.getMenu().getItem(position).setChecked(true);
             }
 
             @Override

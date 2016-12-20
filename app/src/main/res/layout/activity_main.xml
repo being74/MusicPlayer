@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
@@ -19,13 +20,25 @@
         android:layout_above="@+id/rg_activity_main_tabs"
         android:layout_below="@id/in_app_bar_main"/>
 
+    <android.support.design.widget.BottomNavigationView
+        android:id="@+id/nav_activity_main"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        app:menu="@menu/activity_main_bottom_menu"
+        app:itemIconTint="@drawable/selector_main_tab_txt_color"
+        app:itemTextColor="@drawable/selector_main_tab_txt_color"
+        app:itemBackground="@color/colorGrayFa">
+    </android.support.design.widget.BottomNavigationView>
+
     <RadioGroup
         android:id="@+id/rg_activity_main_tabs"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:background="@color/colorGrayFa"
-        android:orientation="horizontal">
+        android:orientation="horizontal"
+        android:visibility="gone">
 
         <RadioButton
             android:id="@+id/rb_activity_main_tabs_music"
