@@ -1,5 +1,7 @@
 package com.music.qiang.musicplayer.model;
 
+import android.graphics.Bitmap;
+
 import java.io.Serializable;
 
 /**
@@ -17,5 +19,6 @@ public class MusicFile implements Serializable {
     public String musicType; // 音乐类别
     public String musicTime; // 音乐时长
     public String musicSize; // 音乐文件大小
+    public Bitmap thumbnail; // 图片缩略图
 
 }
