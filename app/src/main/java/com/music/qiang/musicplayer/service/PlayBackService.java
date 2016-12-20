@@ -1,8 +1,12 @@
 package com.music.qiang.musicplayer.service;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.media.MediaPlayer;
 import android.os.AsyncTask;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -10,16 +14,22 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
+
+import com.music.qiang.musicplayer.R;
+import com.music.qiang.musicplayer.ui.activity.MusicPlayActivity;
 
 /**
  * 通过service方式管理后台播放音乐的服务
  */
-public class PlayBackService extends Service {
+public class PlayBackService extends Service implements MediaPlayer.OnPreparedListener {
 
     private Looper mServiceLooper;
     private ServiceHandler mServiceHandler;
+
+    private MediaPlayer mediaPlayer;
 
     private final class ServiceHandler extends Handler {
         public ServiceHandler(Looper looper) {
@@ -66,6 +76,31 @@ public class PlayBackService extends Service {
 
         mServiceLooper = thread.getLooper();
         mServiceHandler = new ServiceHandler(mServiceLooper);
+
+        NotificationManager mNotifyMgr =
+                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(),
+                0, new Intent(this, MusicPlayActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent prevPendingIntent = PendingIntent.getActivity(getApplicationContext(),
+                0, new Intent(this, MusicPlayActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pausePendingIntent = PendingIntent.getActivity(getApplicationContext(),
+                0, new Intent(this, MusicPlayActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent nextPendingIntent = PendingIntent.getActivity(getApplicationContext(),
+                0, new Intent(this, MusicPlayActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
+
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
+                .setSmallIcon(R.drawable.ic_menu_camera)
+                .setContentTitle("My notification")
+                .setContentText("Hello World!")
+                .addAction(R.drawable.ic_menu_manage, "Previous", prevPendingIntent) // #0
+                .addAction(R.drawable.ic_menu_send, "Pause", pausePendingIntent)  // #1
+                .addAction(R.drawable.ic_menu_share, "Next", nextPendingIntent)     // #2
+                .setStyle(new android.support.v7.app.NotificationCompat.MediaStyle())
+                .setContentIntent(contentIntent);
+        Notification notification = mBuilder.build();
+
+        mNotifyMgr.notify(1, notification);
+        startForeground(1, notification);
     }
 
     /**
@@ -105,13 +140,8 @@ public class PlayBackService extends Service {
      * use for the service's current started state.  It may be one of the
      * constants associated with the {@link #START_CONTINUATION_MASK} bits.
      * @see #stopSelfResult(int)
-     */
-    /**
+     * <p/>
      * 必须返回整型数。整型数是一个值，用于描述系统应该如何在服务终止的情况下继续运行服务
-     * @param intent
-     * @param flags
-     * @param startId
-     * @return
      */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
@@ -121,6 +151,10 @@ public class PlayBackService extends Service {
         Message msg = mServiceHandler.obtainMessage();
         msg.arg1 = startId;
         mServiceHandler.sendMessage(msg);
+
+        /*mediaPlayer = new MediaPlayer();
+        mediaPlayer.setOnPreparedListener(this);
+        mediaPlayer.prepareAsync();*/
 
         // If we get killed, after returning from here, restart
         return START_STICKY;
@@ -152,6 +186,11 @@ public class PlayBackService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
+        Toast.makeText(this, "service destory", Toast.LENGTH_SHORT).show();
     }
 
+    @Override
+    public void onPrepared(MediaPlayer mp) {
+        Toast.makeText(this, "media prepared", Toast.LENGTH_SHORT).show();
+    }
 }
