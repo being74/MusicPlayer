@@ -1,24 +1,33 @@
 package com.music.qiang.musicplayer.ui.fragment;
 
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.ParcelFileDescriptor;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 
 import com.music.qiang.musicplayer.R;
 import com.music.qiang.musicplayer.model.MusicFile;
 import com.music.qiang.musicplayer.ui.activity.MusicPlayActivity;
 import com.music.qiang.musicplayer.ui.adapter.MusicListAdapter;
 
+import java.io.FileDescriptor;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 
 /**
@@ -51,6 +60,11 @@ public class MusicListFragment extends Fragment {
     private RecyclerView.LayoutManager mLayoutManager;
     private MusicListAdapter musicListAdapter;
     private ArrayList<MusicFile> musicFiles;
+    public static Resources resources;
+    static int musicID = 1;
+    private static final Uri sArtworkUri = Uri
+            .parse("content://media/external/audio/media/" + musicID
+                    + "/albumart");
 
     public MusicListFragment() {
         // Required empty public constructor
@@ -99,6 +113,7 @@ public class MusicListFragment extends Fragment {
     }
 
     private void initData() {
+        resources = mContext.getResources();
         initRecyclerView();
     }
 
@@ -112,11 +127,14 @@ public class MusicListFragment extends Fragment {
         getMusicList();
         musicListAdapter = new MusicListAdapter(musicFiles);
         rv_music_list.setAdapter(musicListAdapter);
-        // 4. 设置点击事件
+        // 4. 添加分割线
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(rv_music_list.getContext(),
+                LinearLayout.VERTICAL);
+        rv_music_list.addItemDecoration(dividerItemDecoration);
+        // 5. 设置点击事件
         musicListAdapter.setOnItemClickListener(new MusicListAdapter.MyItemClickListener() {
             @Override
             public void onItemClickListener(View view, int position) {
-                //Toast.makeText(MainActivity.this, "第" + position + "个", Toast.LENGTH_SHORT).show();
                 startActivity(new Intent(mContext, MusicPlayActivity.class));
             }
 
@@ -144,10 +162,59 @@ public class MusicListFragment extends Fragment {
             file.musicPath = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DATA));
             file.musicSize = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.SIZE));
             file.musicTime = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION));
+            Bitmap bm = getMusicBitmap(mContext, file.musicId, -1);
+            if(bm == null) {
+                bm = BitmapFactory.decodeResource(resources, R.drawable.ic_menu_camera);
+            }
+            file.thumbnail = bm;
             musicFiles.add(file);
             cursor.moveToNext();
         }
         cursor.close();
+    }
+
+
+    /**
+     * 将MP3里图片读取出来
+     *
+     * @param context
+     * @param songid
+     * @param albumid
+     * @return
+     */
+    private static Bitmap getMusicBitmap(Context context, long songid,
+                                         long albumid) {
+        Bitmap bm = BitmapFactory.decodeResource(resources, R.drawable.ic_menu_camera);
+        // 判断相关数据
+        if (albumid < 0 && songid < 0) {
+            throw new IllegalArgumentException(
+                    "Must specify an album or a song id");
+        }
+        try {
+            if (albumid < 0) {
+                Uri uri = Uri.parse("content://media/external/audio/media/"
+                        + songid + "/albumart");
+                ParcelFileDescriptor pfd = context.getContentResolver()
+                        .openFileDescriptor(uri, "r");
+                if (pfd != null) {
+                    FileDescriptor fd = pfd.getFileDescriptor();
+                    bm = BitmapFactory.decodeFileDescriptor(fd);
+                }
+                else{
+                    bm = BitmapFactory.decodeResource(resources, R.drawable.ic_menu_camera);
+                }
+            } else {
+                Uri uri = ContentUris.withAppendedId(sArtworkUri, albumid);
+                ParcelFileDescriptor pfd = context.getContentResolver()
+                        .openFileDescriptor(uri, "r");
+                if (pfd != null) {
+                    FileDescriptor fd = pfd.getFileDescriptor();
+                    bm = BitmapFactory.decodeFileDescriptor(fd);
+                }
+            }
+        } catch (FileNotFoundException ex) {
+        }
+        return bm;
     }
 
     // TODO: Rename method, update argument and hook method into UI event
