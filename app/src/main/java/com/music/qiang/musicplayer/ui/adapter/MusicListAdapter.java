@@ -4,7 +4,8 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.music.qiang.musicplayer.R;
@@ -43,6 +44,7 @@ public class MusicListAdapter extends RecyclerView.Adapter<MusicListAdapter.MyVi
     public void onBindViewHolder(final MyViewHolder holder, int position) {
         holder.musicName.setText(musicFiles.get(position).musicName);
         holder.musicInfo.setText(musicFiles.get(position).musicArtist + " - " + musicFiles.get(position).musicAlbum);
+        holder.musicIcon.setImageBitmap(musicFiles.get(position).thumbnail);
 
         if (mOnItemClickListener != null) {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
@@ -63,12 +65,15 @@ public class MusicListAdapter extends RecyclerView.Adapter<MusicListAdapter.MyVi
     public static class MyViewHolder extends RecyclerView.ViewHolder {
         public TextView musicName;
         public TextView musicInfo;
-        public LinearLayout root;
+        public RelativeLayout root;
+        public ImageView musicIcon;
         public MyViewHolder(View itemView) {
             super(itemView);
             musicName = (TextView) itemView.findViewById(R.id.tv_item_music_list_name);
             musicInfo = (TextView) itemView.findViewById(R.id.tv_item_music_list_info);
-            root = (LinearLayout) itemView.findViewById(R.id.ll_item_music_list_root);
+            root = (RelativeLayout) itemView.findViewById(R.id.rl_item_music_list_root);
+            musicIcon = (ImageView) itemView.findViewById(R.id.iv_item_music_list_thumbnail);
         }
     }
+
 }
