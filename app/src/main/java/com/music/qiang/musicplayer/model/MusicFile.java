@@ -1,11 +1,14 @@
 package com.music.qiang.musicplayer.model;
 
 import android.graphics.Bitmap;
+import android.net.Uri;
 
 import java.io.Serializable;
 
 /**
- * Created by qiang on 2016/06/27.
+ * 媒体文件实体类
+ *
+ * Created by xuqiang on 2016/06/27.
  */
 public class MusicFile implements Serializable {
 
@@ -16,9 +19,10 @@ public class MusicFile implements Serializable {
     public String musicArtist; // 艺术家名称
     public String musicPath; // 音乐路径
     public String musicAlbum; // 所在专辑名称
+    public long musicAlubmId; // 专辑id
     public String musicType; // 音乐类别
     public String musicTime; // 音乐时长
     public String musicSize; // 音乐文件大小
-    public Bitmap thumbnail; // 图片缩略图
+    public Uri musicThumbnail;// 图片缩略图
 
 }
