@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item android:id="@+id/main_bottom_nav_music"
+          android:enabled="true"
+          app:showAsAction="ifRoom"
+          android:title="歌曲"
+          android:icon="@drawable/selector_main_tab_music"/>
+
+    <item android:id="@+id/main_bottom_nav_album"
+          android:enabled="true"
+          app:showAsAction="ifRoom"
+          android:title="专辑"
+          android:icon="@drawable/selector_main_tab_album"/>
+
+    <item android:id="@+id/main_bottom_nav_artist"
+          android:enabled="true"
+          app:showAsAction="ifRoom"
+          android:title="艺术家"
+          android:icon="@drawable/selector_main_tab_artist"/>
+
+    <item android:id="@+id/main_bottom_nav_more"
+          android:enabled="true"
+          app:showAsAction="ifRoom"
+          android:title="更多"
+          android:icon="@drawable/selector_main_tab_more"/>
+
+</menu>
