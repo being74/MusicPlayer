@@ -9,8 +9,6 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
-import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import com.music.qiang.musicplayer.ui.fragment.AlbumListFragment;
@@ -24,9 +22,6 @@ public class MainActivity extends AppCompatActivity implements ItemFragment.OnLi
     // ****************Views*******************
     private Toolbar toolbar;
     private ViewPager vp_activity_main;
-    private RadioGroup rg_activity_main_tabs;
-    private RadioButton rb_activity_main_tabs_music, rb_activity_main_tabs_album, rb_activity_main_tabs_artist, rb_activity_main_tabs_more;
-    private RadioButton[] radios;
     private BottomNavigationView nav_activity_main;
     // ****************对象********************
 
@@ -47,44 +42,14 @@ public class MainActivity extends AppCompatActivity implements ItemFragment.OnLi
 
     private void initViews() {
         vp_activity_main = (ViewPager) findViewById(R.id.vp_activity_main);
-        rg_activity_main_tabs = (RadioGroup) findViewById(R.id.rg_activity_main_tabs);
-        rb_activity_main_tabs_music = (RadioButton) findViewById(R.id.rb_activity_main_tabs_music);
-        rb_activity_main_tabs_album = (RadioButton) findViewById(R.id.rb_activity_main_tabs_album);
-        rb_activity_main_tabs_artist = (RadioButton) findViewById(R.id.rb_activity_main_tabs_artist);
-        rb_activity_main_tabs_more = (RadioButton) findViewById(R.id.rb_activity_main_tabs_more);
         nav_activity_main = (BottomNavigationView) findViewById(R.id.nav_activity_main);
     }
 
     private void ininData() {
         vp_activity_main.setAdapter(new HomePagerAdapter(getSupportFragmentManager()));
-        radios = new RadioButton[4];
-        radios[0] = rb_activity_main_tabs_music;
-        radios[1] = rb_activity_main_tabs_album;
-        radios[2] = rb_activity_main_tabs_artist;
-        radios[3] = rb_activity_main_tabs_more;
-        radios[0].setChecked(true);
     }
 
     private void registerListener() {
-        /*rg_activity_main_tabs.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                switch (checkedId) {
-                    case R.id.rb_activity_main_tabs_music:
-                        vp_activity_main.setCurrentItem(0);
-                        break;
-                    case R.id.rb_activity_main_tabs_album:
-                        vp_activity_main.setCurrentItem(1);
-                        break;
-                    case R.id.rb_activity_main_tabs_artist:
-                        vp_activity_main.setCurrentItem(2);
-                        break;
-                    case R.id.rb_activity_main_tabs_more:
-                        vp_activity_main.setCurrentItem(3);
-                        break;
-                }
-            }
-        });*/
 
         nav_activity_main.setOnNavigationItemSelectedListener(new BottomNavigationView.OnNavigationItemSelectedListener() {
             @Override
@@ -115,7 +80,6 @@ public class MainActivity extends AppCompatActivity implements ItemFragment.OnLi
 
             @Override
             public void onPageSelected(int position) {
-                radios[position].setChecked(true);
                 nav_activity_main.getMenu().getItem(position).setChecked(true);
             }
 
