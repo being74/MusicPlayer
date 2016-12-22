@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.music.qiang.musicplayer">
+<manifest package="com.music.qiang.musicplayer"
+          xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
 
     <application
+        android:name=".application.MyApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -15,24 +18,35 @@
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.intent.action.MAIN"/>
 
-                <category android:name="android.intent.category.LAUNCHER" />
+                <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
         <activity
             android:name=".ui.activity.SettingsActivity"
-            android:label="@string/title_activity_settings" />
-
-        <service
-            android:name=".service.PlayMusicService"
-            android:enabled="true"
-            android:exported="true" />
+            android:label="@string/title_activity_settings"/>
 
         <activity
             android:name=".ui.activity.MusicPlayActivity"
             android:label="@string/title_activity_music_play"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar"/>
+
+        <!-- 音乐播放主要service -->
+
+        <service
+            android:name=".service.PlayMusicService"
+            android:enabled="true"
+            android:exported="true">
+
+            <intent-filter>
+                <action android:name="android.media.browse.MediaBrowserService"/>
+            </intent-filter>
+
+        </service>
+
+        <service android:name=".service.PlayBackService"/>
+
     </application>
 
 </manifest>
