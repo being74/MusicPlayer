@@ -1,11 +1,14 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    tools:context="com.music.qiang.musicplayer.ui.fragment.PlayBackFragment"
-    android:padding="16dp"
-    android:background="@color/colorGrayF5">
+                xmlns:app="http://schemas.android.com/apk/res-auto"
+                xmlns:tools="http://schemas.android.com/tools"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@color/colorGrayF5"
+                android:paddingBottom="8dp"
+                android:paddingLeft="16dp"
+                android:paddingRight="16dp"
+                android:paddingTop="8dp"
+                tools:context=".ui.fragment.PlaybackControlsFragment">
 
     <ImageView
         android:id="@+id/iv_fragment_play_back_head"
@@ -17,14 +20,14 @@
         android:id="@+id/ll_fragment_play_back_info"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:layout_centerVertical="true"
         android:layout_marginLeft="8dp"
         android:layout_marginStart="8dp"
-        android:layout_toRightOf="@id/iv_fragment_play_back_head"
         android:layout_toEndOf="@id/iv_fragment_play_back_head"
         android:layout_toLeftOf="@+id/ib_fragment_play_back_control"
-        android:layout_toStartOf="@+id/ib_fragment_play_back_control">
+        android:layout_toRightOf="@id/iv_fragment_play_back_head"
+        android:layout_toStartOf="@+id/ib_fragment_play_back_control"
+        android:orientation="vertical">
 
         <TextView
             android:id="@+id/tv_fragment_play_back_music_name"
@@ -52,7 +55,7 @@
         android:id="@+id/ib_fragment_play_back_control"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:srcCompat="@android:drawable/ic_media_play"
+        android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true" />
+        app:srcCompat="@android:drawable/ic_media_play"/>
 </RelativeLayout>
