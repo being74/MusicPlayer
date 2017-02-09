@@ -11,13 +11,13 @@ import android.support.v7.app.AppCompatActivity;
 
 import com.music.qiang.musicplayer.service.PlayMusicService;
 import com.music.qiang.musicplayer.support.utils.LogHelper;
-import com.music.qiang.musicplayer.ui.fragment.PlayBackFragment;
+import com.music.qiang.musicplayer.ui.fragment.PlaybackControlsFragment;
 
 public class BaseActivity extends AppCompatActivity {
 
     private static final String TAG = LogHelper.makeLogTag(BaseActivity.class);
     private MediaBrowserCompat mMediaBrowser;
-    private PlayBackFragment mControlsFragment;
+    private PlaybackControlsFragment mControlsFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
