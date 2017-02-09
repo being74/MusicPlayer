@@ -123,7 +123,11 @@ public class MusicListFragment extends Fragment {
         musicListAdapter.setOnItemClickListener(new MusicListAdapter.MyItemClickListener() {
             @Override
             public void onItemClickListener(View view, int position) {
-                startActivity(new Intent(mContext, MusicPlayActivity.class));
+                Intent intent = new Intent(mContext, MusicPlayActivity.class);
+                Bundle bundle = new Bundle();
+                bundle.putSerializable("playList", musicFiles);
+                intent.putExtras(bundle);
+                startActivity(intent);
             }
 
             @Override

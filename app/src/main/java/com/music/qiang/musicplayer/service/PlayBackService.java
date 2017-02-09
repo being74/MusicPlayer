@@ -4,10 +4,14 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
+import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
@@ -19,17 +23,24 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.music.qiang.musicplayer.R;
+import com.music.qiang.musicplayer.model.MusicFile;
 import com.music.qiang.musicplayer.ui.activity.MusicPlayActivity;
+
+import java.util.ArrayList;
 
 /**
  * 通过service方式管理后台播放音乐的服务
  */
-public class PlayBackService extends Service implements MediaPlayer.OnPreparedListener {
+public class PlayBackService extends Service implements MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener {
 
     private Looper mServiceLooper;
     private ServiceHandler mServiceHandler;
 
     private MediaPlayer mediaPlayer;
+
+    private ArrayList<MusicFile> playList;
+    private int currentIndex = 0;
+    private long musicId;
 
     private final class ServiceHandler extends Handler {
         public ServiceHandler(Looper looper) {
@@ -45,12 +56,18 @@ public class PlayBackService extends Service implements MediaPlayer.OnPreparedLi
         public void handleMessage(Message msg) {
             // 模拟一个耗时操作
             try {
-                Thread.sleep(5000);
-            } catch (InterruptedException e) {
+                //Thread.sleep(5000);
+                Uri contentUri = ContentUris.withAppendedId(
+                        android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, musicId);
+                mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                mediaPlayer.setDataSource(getApplicationContext(), contentUri);
+                mediaPlayer.prepare();
+                mediaPlayer.start();
+            } catch (Exception e) {
                 Thread.currentThread().interrupt();
             }
             // 通过startId来停止一个服务，以防影响其他正在执行的服务
-            stopSelf(msg.arg1);
+            //stopSelf(msg.arg1);
         }
     }
 
@@ -70,12 +87,18 @@ public class PlayBackService extends Service implements MediaPlayer.OnPreparedLi
     @Override
     public void onCreate() {
         super.onCreate();
+
         HandlerThread thread = new HandlerThread("ServiceStartArgument",
                 Process.THREAD_PRIORITY_BACKGROUND);
         thread.start();
 
         mServiceLooper = thread.getLooper();
         mServiceHandler = new ServiceHandler(mServiceLooper);
+
+        mediaPlayer = new MediaPlayer();
+        mediaPlayer.setOnPreparedListener(this);
+        mediaPlayer.setOnCompletionListener(this);
+        mediaPlayer.setOnErrorListener(this);
 
         NotificationManager mNotifyMgr =
                 (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
@@ -146,15 +169,14 @@ public class PlayBackService extends Service implements MediaPlayer.OnPreparedLi
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
-        String test = intent.getStringExtra("ID");
-        Log.d("xuqiang", test);
+        Bundle bundleObject = intent.getExtras();
+        playList = (ArrayList<MusicFile>) bundleObject.getSerializable("playList");
+        musicId = playList.get(currentIndex).musicId;
+        //musicId = intent.getLongExtra("ID", 0);
+        Log.d("xuqiang", musicId + "---------");
         Message msg = mServiceHandler.obtainMessage();
         msg.arg1 = startId;
         mServiceHandler.sendMessage(msg);
-
-        /*mediaPlayer = new MediaPlayer();
-        mediaPlayer.setOnPreparedListener(this);
-        mediaPlayer.prepareAsync();*/
 
         // If we get killed, after returning from here, restart
         return START_STICKY;
@@ -187,10 +209,23 @@ public class PlayBackService extends Service implements MediaPlayer.OnPreparedLi
     public void onDestroy() {
         super.onDestroy();
         Toast.makeText(this, "service destory", Toast.LENGTH_SHORT).show();
+        mediaPlayer.release();
+        mediaPlayer = null;
     }
 
     @Override
     public void onPrepared(MediaPlayer mp) {
         Toast.makeText(this, "media prepared", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onCompletion(MediaPlayer mp) {
+        Toast.makeText(this, "media onCompletion", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public boolean onError(MediaPlayer mp, int what, int extra) {
+        Toast.makeText(this, "media onError", Toast.LENGTH_SHORT).show();
+        return false;
     }
 }
