@@ -9,8 +9,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.session.MediaSession;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -24,6 +26,7 @@ import android.widget.Toast;
 
 import com.music.qiang.musicplayer.R;
 import com.music.qiang.musicplayer.model.MusicFile;
+import com.music.qiang.musicplayer.playback.IPlayback;
 import com.music.qiang.musicplayer.ui.activity.MusicPlayActivity;
 
 import java.util.ArrayList;
@@ -72,13 +75,6 @@ public class PlayBackService extends Service implements MediaPlayer.OnPreparedLi
     }
 
     public PlayBackService() {
-    }
-
-    @Override
-    public IBinder onBind(Intent intent) {
-        // TODO: Return the communication channel to the service.
-        throw new UnsupportedOperationException("Not yet implemented");
-
     }
 
     /**
@@ -182,6 +178,13 @@ public class PlayBackService extends Service implements MediaPlayer.OnPreparedLi
         return START_STICKY;
     }
 
+
+    @Override
+    public IBinder onBind(Intent intent) {
+        return new MusicBinder();
+
+    }
+
     /**
      * Called when all clients have disconnected from a particular interface
      * published by the service.  The default implementation does nothing and
@@ -199,12 +202,6 @@ public class PlayBackService extends Service implements MediaPlayer.OnPreparedLi
         return super.onUnbind(intent);
     }
 
-    /**
-     * Called by the system to notify a Service that it is no longer used and is being removed.  The
-     * service should clean up any resources it holds (threads, registered
-     * receivers, etc) at this point.  Upon return, there will be no more calls
-     * in to this Service object and it is effectively dead.  Do not call this method directly.
-     */
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -227,5 +224,85 @@ public class PlayBackService extends Service implements MediaPlayer.OnPreparedLi
     public boolean onError(MediaPlayer mp, int what, int extra) {
         Toast.makeText(this, "media onError", Toast.LENGTH_SHORT).show();
         return false;
+    }
+
+    /**
+     * 播放类的binder
+     */
+    private class MusicBinder extends Binder implements IPlayback {
+        @Override
+        public void start() {
+
+        }
+
+        @Override
+        public void stop(boolean notifyListeners) {
+
+        }
+
+        @Override
+        public void setState(int state) {
+
+        }
+
+        @Override
+        public int getState() {
+            return 0;
+        }
+
+        @Override
+        public boolean isConnected() {
+            return false;
+        }
+
+        @Override
+        public boolean isPlaying() {
+            return false;
+        }
+
+        @Override
+        public int getCurrentStreamPosition() {
+            return 0;
+        }
+
+        @Override
+        public void setCurrentStreamPosition(int position) {
+
+        }
+
+        @Override
+        public void updateLastKnownStreamPosition() {
+
+        }
+
+        @Override
+        public void play(MediaSession.QueueItem item) {
+
+        }
+
+        @Override
+        public void pause() {
+
+        }
+
+        @Override
+        public void seekTo(int position) {
+
+        }
+
+        @Override
+        public void setCurrentMediaId(String mediaId) {
+
+        }
+
+        @Override
+        public String getCurrentMediaId() {
+            return null;
+        }
+
+        @Override
+        public void setCallback(Callback callback) {
+
+        }
     }
 }

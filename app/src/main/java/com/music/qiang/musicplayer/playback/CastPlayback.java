@@ -5,7 +5,7 @@ import android.media.session.MediaSession;
 /**
  * Created by user on 2016/9/30.
  */
-public class CastPlayback implements Playback {
+public class CastPlayback implements IPlayback {
 
     private static final String TAG = "";
 

@@ -22,6 +22,8 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <include layout="@layout/content_music_play" />
+    <!--<include layout="@layout/content_music_play" />-->
+
+    <include layout="@layout/fragment_music_play" />
 
 </android.support.design.widget.CoordinatorLayout>

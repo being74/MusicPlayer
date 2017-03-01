@@ -6,7 +6,7 @@ import android.media.session.PlaybackState;
 /**
  * Created by xuqiang on 2016/9/30.
  */
-public interface Playback {
+public interface IPlayback {
 
     /**
      * 开始播放
