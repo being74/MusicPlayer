@@ -7,8 +7,10 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.Toast;
 
 import com.music.qiang.musicplayer.R;
 import com.music.qiang.musicplayer.model.MusicFile;
@@ -23,10 +25,11 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
     /**
      * 开始/暂停 按钮
      */
-    private ImageButton playButton;
+    private ImageButton playButton, playPre, playNext;
 
     //***************基本数据***************
     private ArrayList<MusicFile> playList;
+    private int playIndex;
 
     //***************对象***************
     private IPlayback iPlayback;
@@ -49,6 +52,7 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Log.d("xuqiang", "activity  ------  onCreate");
         setContentView(R.layout.activity_music_play);
         fetchIntents();
         initViews();
@@ -61,15 +65,14 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
         Bundle bundle = new Bundle();
         bundle.putSerializable("playList", playList);
         intent.putExtras(bundle);
-        //intent.putExtra("ID", musicId);
-        //startService(intent);
         bindService(intent, connection, BIND_AUTO_CREATE);
-
+        //startService(intent);
     }
 
     private void fetchIntents() {
         Bundle bundleObject = getIntent().getExtras();
         playList = (ArrayList<MusicFile>) bundleObject.getSerializable("playList");
+        playIndex = bundleObject.getInt("playIndex");
     }
 
     private void initViews() {
@@ -86,17 +89,32 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
         });
 
         playButton = (ImageButton) findViewById(R.id.ib_fragment_music_play);
+        playPre = (ImageButton) findViewById(R.id.ib_fragment_music_play_pre);
+        playNext = (ImageButton) findViewById(R.id.ib_fragment_music_play_next);
     }
 
     private void registListener() {
         playButton.setOnClickListener(this);
+        playPre.setOnClickListener(this);
+        playNext.setOnClickListener(this);
     }
 
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.ib_fragment_music_play:
-                iPlayback.getState();
+                if (iPlayback.isPlaying()) {
+                    Toast.makeText(this, "暂停", Toast.LENGTH_SHORT).show();
+                    iPlayback.pause();
+                } else {
+                    Toast.makeText(this, "播放", Toast.LENGTH_SHORT).show();
+                    iPlayback.play();
+                }
+                break;
+            case R.id.ib_fragment_music_play_pre:
+                break;
+            case R.id.ib_fragment_music_play_next:
+                iPlayback.setCurrentIndex(playIndex++);
                 break;
         }
     }

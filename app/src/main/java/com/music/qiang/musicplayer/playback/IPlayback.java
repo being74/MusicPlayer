@@ -62,9 +62,9 @@ public interface IPlayback {
     void updateLastKnownStreamPosition();
 
     /**
-     * @param item to play
+     * 播放
      */
-    void play(MediaSession.QueueItem item);
+    void play();
 
     /**
      * 暂停
@@ -87,6 +87,10 @@ public interface IPlayback {
      * @return 当前mediaId
      */
     String getCurrentMediaId();
+
+    void setCurrentIndex(int index);
+
+    int getCurrentIndex();
 
     interface Callback {
 

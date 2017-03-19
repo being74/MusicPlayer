@@ -125,6 +125,7 @@ public class MusicListFragment extends Fragment {
             public void onItemClickListener(View view, int position) {
                 Intent intent = new Intent(mContext, MusicPlayActivity.class);
                 Bundle bundle = new Bundle();
+                bundle.putInt("playIndex", position);
                 bundle.putSerializable("playList", musicFiles);
                 intent.putExtras(bundle);
                 startActivity(intent);

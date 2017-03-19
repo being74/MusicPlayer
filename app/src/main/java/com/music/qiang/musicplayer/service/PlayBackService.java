@@ -57,20 +57,26 @@ public class PlayBackService extends Service implements MediaPlayer.OnPreparedLi
          */
         @Override
         public void handleMessage(Message msg) {
-            // 模拟一个耗时操作
-            try {
-                //Thread.sleep(5000);
-                Uri contentUri = ContentUris.withAppendedId(
-                        android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, musicId);
-                mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-                mediaPlayer.setDataSource(getApplicationContext(), contentUri);
-                mediaPlayer.prepare();
-                mediaPlayer.start();
-            } catch (Exception e) {
-                Thread.currentThread().interrupt();
+            switch (msg.what) {
+                default:
+                    // 开始播放
+                    try {
+                        //Thread.sleep(5000);
+                        Uri contentUri = ContentUris.withAppendedId(
+                                android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, musicId);
+                        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                        mediaPlayer.setDataSource(getApplicationContext(), contentUri);
+                        mediaPlayer.prepare();
+                        mediaPlayer.start();
+                    } catch (Exception e) {
+                        Thread.currentThread().interrupt();
+                    }
+                    break;
             }
+            Log.d("xuqiang", "msg.arg1=" + msg.arg1);
             // 通过startId来停止一个服务，以防影响其他正在执行的服务
             //stopSelf(msg.arg1);
+            //stopSelfResult(msg.arg1);
         }
     }
 
@@ -83,6 +89,8 @@ public class PlayBackService extends Service implements MediaPlayer.OnPreparedLi
     @Override
     public void onCreate() {
         super.onCreate();
+
+        Log.d("xuqiang", "service---onCreate---");
 
         HandlerThread thread = new HandlerThread("ServiceStartArgument",
                 Process.THREAD_PRIORITY_BACKGROUND);
@@ -164,12 +172,13 @@ public class PlayBackService extends Service implements MediaPlayer.OnPreparedLi
      */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        Log.d("xuqiang", "service---onStartCommand---");
         Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
         Bundle bundleObject = intent.getExtras();
         playList = (ArrayList<MusicFile>) bundleObject.getSerializable("playList");
         musicId = playList.get(currentIndex).musicId;
         //musicId = intent.getLongExtra("ID", 0);
-        Log.d("xuqiang", musicId + "---------");
+        Log.d("xuqiang", "-----startId----" + startId);
         Message msg = mServiceHandler.obtainMessage();
         msg.arg1 = startId;
         mServiceHandler.sendMessage(msg);
@@ -178,27 +187,22 @@ public class PlayBackService extends Service implements MediaPlayer.OnPreparedLi
         return START_STICKY;
     }
 
-
     @Override
     public IBinder onBind(Intent intent) {
+        Log.d("xuqiang", "service---onBind---");
+        Bundle bundleObject = intent.getExtras();
+        playList = (ArrayList<MusicFile>) bundleObject.getSerializable("playList");
+        musicId = playList.get(currentIndex).musicId;
+        Log.d("xuqiang", musicId + "---------");
+        Message msg = mServiceHandler.obtainMessage();
+        //msg.arg1 = startId;
+        mServiceHandler.sendMessage(msg);
         return new MusicBinder();
-
     }
 
-    /**
-     * Called when all clients have disconnected from a particular interface
-     * published by the service.  The default implementation does nothing and
-     * returns false.
-     *
-     * @param intent The Intent that was used to bind to this service,
-     *               as given to {@link Context#bindService
-     *               Context.bindService}.  Note that any extras that were included with
-     *               the Intent at that point will <em>not</em> be seen here.
-     * @return Return true if you would like to have the service's
-     * {@link #onRebind} method later called when new clients bind to it.
-     */
     @Override
     public boolean onUnbind(Intent intent) {
+        Log.d("xuqiang", "service---onUnbind---");
         return super.onUnbind(intent);
     }
 
@@ -218,12 +222,22 @@ public class PlayBackService extends Service implements MediaPlayer.OnPreparedLi
     @Override
     public void onCompletion(MediaPlayer mp) {
         Toast.makeText(this, "media onCompletion", Toast.LENGTH_SHORT).show();
+        currentIndex++;
+        refresh();
     }
 
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
         Toast.makeText(this, "media onError", Toast.LENGTH_SHORT).show();
         return false;
+    }
+
+    private void refresh() {
+        mediaPlayer.reset();
+        musicId = playList.get(currentIndex).musicId;
+        //musicId = intent.getLongExtra("ID", 0);
+        Message msg = mServiceHandler.obtainMessage();
+        mServiceHandler.sendMessage(msg);
     }
 
     /**
@@ -237,7 +251,7 @@ public class PlayBackService extends Service implements MediaPlayer.OnPreparedLi
 
         @Override
         public void stop(boolean notifyListeners) {
-
+            mediaPlayer.stop();
         }
 
         @Override
@@ -257,7 +271,7 @@ public class PlayBackService extends Service implements MediaPlayer.OnPreparedLi
 
         @Override
         public boolean isPlaying() {
-            return false;
+            return mediaPlayer.isPlaying();
         }
 
         @Override
@@ -276,13 +290,13 @@ public class PlayBackService extends Service implements MediaPlayer.OnPreparedLi
         }
 
         @Override
-        public void play(MediaSession.QueueItem item) {
-
+        public void play() {
+            mediaPlayer.start();
         }
 
         @Override
         public void pause() {
-
+            mediaPlayer.pause();
         }
 
         @Override
@@ -298,6 +312,17 @@ public class PlayBackService extends Service implements MediaPlayer.OnPreparedLi
         @Override
         public String getCurrentMediaId() {
             return null;
+        }
+
+        @Override
+        public void setCurrentIndex(int index) {
+            currentIndex = index;
+            refresh();
+        }
+
+        @Override
+        public int getCurrentIndex() {
+            return 0;
         }
 
         @Override
