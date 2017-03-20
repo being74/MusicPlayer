@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
-import android.media.session.MediaSession;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Binder;
@@ -20,6 +19,7 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
+import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.widget.Toast;
@@ -38,6 +38,7 @@ public class PlayBackService extends Service implements MediaPlayer.OnPreparedLi
 
     private Looper mServiceLooper;
     private ServiceHandler mServiceHandler;
+    private NotificationManager notificationManager;
 
     private MediaPlayer mediaPlayer;
 
@@ -89,7 +90,6 @@ public class PlayBackService extends Service implements MediaPlayer.OnPreparedLi
     @Override
     public void onCreate() {
         super.onCreate();
-
         Log.d("xuqiang", "service---onCreate---");
 
         HandlerThread thread = new HandlerThread("ServiceStartArgument",
@@ -104,30 +104,8 @@ public class PlayBackService extends Service implements MediaPlayer.OnPreparedLi
         mediaPlayer.setOnCompletionListener(this);
         mediaPlayer.setOnErrorListener(this);
 
-        NotificationManager mNotifyMgr =
-                (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(),
-                0, new Intent(this, MusicPlayActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
-        PendingIntent prevPendingIntent = PendingIntent.getActivity(getApplicationContext(),
-                0, new Intent(this, MusicPlayActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
-        PendingIntent pausePendingIntent = PendingIntent.getActivity(getApplicationContext(),
-                0, new Intent(this, MusicPlayActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
-        PendingIntent nextPendingIntent = PendingIntent.getActivity(getApplicationContext(),
-                0, new Intent(this, MusicPlayActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
-
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
-                .setSmallIcon(R.drawable.ic_menu_camera)
-                .setContentTitle("My notification")
-                .setContentText("Hello World!")
-                .addAction(R.drawable.ic_menu_manage, "Previous", prevPendingIntent) // #0
-                .addAction(R.drawable.ic_menu_send, "Pause", pausePendingIntent)  // #1
-                .addAction(R.drawable.ic_menu_share, "Next", nextPendingIntent)     // #2
-                .setStyle(new android.support.v7.app.NotificationCompat.MediaStyle())
-                .setContentIntent(contentIntent);
-        Notification notification = mBuilder.build();
-
-        mNotifyMgr.notify(1, notification);
-        startForeground(1, notification);
+        notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        showNotification();
     }
 
     /**
@@ -173,11 +151,11 @@ public class PlayBackService extends Service implements MediaPlayer.OnPreparedLi
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d("xuqiang", "service---onStartCommand---");
-        Toast.makeText(this, "service starting", Toast.LENGTH_SHORT).show();
         Bundle bundleObject = intent.getExtras();
         playList = (ArrayList<MusicFile>) bundleObject.getSerializable("playList");
+        currentIndex = bundleObject.getInt("playIndex");
         musicId = playList.get(currentIndex).musicId;
-        //musicId = intent.getLongExtra("ID", 0);
+
         Log.d("xuqiang", "-----startId----" + startId);
         Message msg = mServiceHandler.obtainMessage();
         msg.arg1 = startId;
@@ -187,23 +165,10 @@ public class PlayBackService extends Service implements MediaPlayer.OnPreparedLi
         return START_STICKY;
     }
 
+    @Nullable
     @Override
     public IBinder onBind(Intent intent) {
-        Log.d("xuqiang", "service---onBind---");
-        Bundle bundleObject = intent.getExtras();
-        playList = (ArrayList<MusicFile>) bundleObject.getSerializable("playList");
-        musicId = playList.get(currentIndex).musicId;
-        Log.d("xuqiang", musicId + "---------");
-        Message msg = mServiceHandler.obtainMessage();
-        //msg.arg1 = startId;
-        mServiceHandler.sendMessage(msg);
-        return new MusicBinder();
-    }
-
-    @Override
-    public boolean onUnbind(Intent intent) {
-        Log.d("xuqiang", "service---onUnbind---");
-        return super.onUnbind(intent);
+        return null;
     }
 
     @Override
@@ -232,6 +197,36 @@ public class PlayBackService extends Service implements MediaPlayer.OnPreparedLi
         return false;
     }
 
+    /**
+     * Show a notification while this service is running.
+     */
+    private void showNotification() {
+
+        PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(),
+                0, new Intent(this, MusicPlayActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent prevPendingIntent = PendingIntent.getActivity(getApplicationContext(),
+                0, new Intent(this, MusicPlayActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pausePendingIntent = PendingIntent.getActivity(getApplicationContext(),
+                0, new Intent(this, MusicPlayActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent nextPendingIntent = PendingIntent.getActivity(getApplicationContext(),
+                0, new Intent(this, MusicPlayActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
+
+        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle("My notification")
+                .setContentText("Hello World!")
+                .addAction(R.mipmap.ic_music_play_rewind, "Previous", prevPendingIntent) // #0
+                .addAction(R.mipmap.ic_music_play, "Pause", pausePendingIntent)  // #1
+                .addAction(R.mipmap.ic_music_play_forward, "Next", nextPendingIntent)     // #2
+                .setStyle(new android.support.v7.app.NotificationCompat.MediaStyle())
+                .setContentIntent(contentIntent);
+        Notification notification = mBuilder.build();
+
+        notificationManager.notify(1, notification);
+        startForeground(1, notification);
+    }
+
+
     private void refresh() {
         mediaPlayer.reset();
         musicId = playList.get(currentIndex).musicId;
@@ -247,6 +242,15 @@ public class PlayBackService extends Service implements MediaPlayer.OnPreparedLi
         @Override
         public void start() {
 
+        }
+        @Override
+        public void play() {
+            mediaPlayer.start();
+        }
+
+        @Override
+        public void pause() {
+            mediaPlayer.pause();
         }
 
         @Override
@@ -289,15 +293,6 @@ public class PlayBackService extends Service implements MediaPlayer.OnPreparedLi
 
         }
 
-        @Override
-        public void play() {
-            mediaPlayer.start();
-        }
-
-        @Override
-        public void pause() {
-            mediaPlayer.pause();
-        }
 
         @Override
         public void seekTo(int position) {
