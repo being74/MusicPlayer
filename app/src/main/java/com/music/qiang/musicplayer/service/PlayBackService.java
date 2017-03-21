@@ -11,7 +11,6 @@ import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -26,7 +25,6 @@ import android.widget.Toast;
 
 import com.music.qiang.musicplayer.R;
 import com.music.qiang.musicplayer.model.MusicFile;
-import com.music.qiang.musicplayer.playback.IPlayback;
 import com.music.qiang.musicplayer.ui.activity.MusicPlayActivity;
 
 import java.util.ArrayList;
@@ -103,6 +101,9 @@ public class PlayBackService extends Service implements MediaPlayer.OnPreparedLi
         mediaPlayer.setOnPreparedListener(this);
         mediaPlayer.setOnCompletionListener(this);
         mediaPlayer.setOnErrorListener(this);
+
+        // 创建播放类管理者
+
 
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         showNotification();
@@ -233,96 +234,5 @@ public class PlayBackService extends Service implements MediaPlayer.OnPreparedLi
         //musicId = intent.getLongExtra("ID", 0);
         Message msg = mServiceHandler.obtainMessage();
         mServiceHandler.sendMessage(msg);
-    }
-
-    /**
-     * 播放类的binder
-     */
-    private class MusicBinder extends Binder implements IPlayback {
-        @Override
-        public void start() {
-
-        }
-        @Override
-        public void play() {
-            mediaPlayer.start();
-        }
-
-        @Override
-        public void pause() {
-            mediaPlayer.pause();
-        }
-
-        @Override
-        public void stop(boolean notifyListeners) {
-            mediaPlayer.stop();
-        }
-
-        @Override
-        public void setState(int state) {
-
-        }
-
-        @Override
-        public int getState() {
-            return 0;
-        }
-
-        @Override
-        public boolean isConnected() {
-            return false;
-        }
-
-        @Override
-        public boolean isPlaying() {
-            return mediaPlayer.isPlaying();
-        }
-
-        @Override
-        public int getCurrentStreamPosition() {
-            return 0;
-        }
-
-        @Override
-        public void setCurrentStreamPosition(int position) {
-
-        }
-
-        @Override
-        public void updateLastKnownStreamPosition() {
-
-        }
-
-
-        @Override
-        public void seekTo(int position) {
-
-        }
-
-        @Override
-        public void setCurrentMediaId(String mediaId) {
-
-        }
-
-        @Override
-        public String getCurrentMediaId() {
-            return null;
-        }
-
-        @Override
-        public void setCurrentIndex(int index) {
-            currentIndex = index;
-            refresh();
-        }
-
-        @Override
-        public int getCurrentIndex() {
-            return 0;
-        }
-
-        @Override
-        public void setCallback(Callback callback) {
-
-        }
     }
 }

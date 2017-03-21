@@ -1,11 +1,9 @@
 package com.music.qiang.musicplayer.playback;
 
-import android.media.session.MediaSession;
-
 /**
  * Created by user on 2016/9/30.
  */
-public class CastPlayback implements IPlayback {
+public class LocalPlayback implements IPlayback {
 
     private static final String TAG = "";
 
@@ -63,8 +61,18 @@ public class CastPlayback implements IPlayback {
     }
 
     @Override
-    public void play(MediaSession.QueueItem item) {
+    public void play() {
 
+    }
+
+    @Override
+    public void setCurrentIndex(int index) {
+
+    }
+
+    @Override
+    public int getCurrentIndex() {
+        return 0;
     }
 
     @Override
