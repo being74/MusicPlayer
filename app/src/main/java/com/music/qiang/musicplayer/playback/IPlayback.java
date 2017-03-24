@@ -1,6 +1,5 @@
 package com.music.qiang.musicplayer.playback;
 
-import android.media.session.MediaSession;
 import android.media.session.PlaybackState;
 
 /**
@@ -64,7 +63,7 @@ public interface IPlayback {
     /**
      * 播放
      */
-    void play();
+    void play(String id);
 
     /**
      * 暂停
