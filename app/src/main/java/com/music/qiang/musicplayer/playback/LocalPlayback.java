@@ -77,7 +77,7 @@ public class LocalPlayback implements IPlayback, AudioManager.OnAudioFocusChange
      */
     private final WifiManager.WifiLock mWifiLock;
     /**
-     * 待定
+     * IPlayback中的回调方法
      */
     private Callback mCallback;
 
@@ -339,7 +339,7 @@ public class LocalPlayback implements IPlayback, AudioManager.OnAudioFocusChange
 
     @Override
     public void setCallback(Callback callback) {
-
+        this.mCallback = callback;
     }
 
     /**

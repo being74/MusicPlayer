@@ -3,6 +3,8 @@ package com.music.qiang.musicplayer.playback;
 import android.media.session.PlaybackState;
 
 /**
+ * 播放类主接口
+ * <p>
  * Created by xuqiang on 2016/9/30.
  */
 public interface IPlayback {

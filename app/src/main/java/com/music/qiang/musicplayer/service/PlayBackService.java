@@ -25,6 +25,8 @@ import android.widget.Toast;
 
 import com.music.qiang.musicplayer.R;
 import com.music.qiang.musicplayer.model.MusicFile;
+import com.music.qiang.musicplayer.playback.LocalPlayback;
+import com.music.qiang.musicplayer.playback.PlayBackManager;
 import com.music.qiang.musicplayer.ui.activity.MusicPlayActivity;
 
 import java.util.ArrayList;
@@ -34,13 +36,15 @@ import java.util.ArrayList;
  */
 public class PlayBackService extends Service implements MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener {
 
+    //*****************类和对象*******************
+    private PlayBackManager playBackManager;
     private Looper mServiceLooper;
     private ServiceHandler mServiceHandler;
     private NotificationManager notificationManager;
-
     private MediaPlayer mediaPlayer;
-
     private ArrayList<MusicFile> playList;
+
+    //*****************基本数据类型****************
     private int currentIndex = 0;
     private long musicId;
 
@@ -103,6 +107,9 @@ public class PlayBackService extends Service implements MediaPlayer.OnPreparedLi
         mediaPlayer.setOnErrorListener(this);
 
         // 创建播放类管理者
+        LocalPlayback playback = new LocalPlayback(this);
+        playBackManager = new PlayBackManager(playback, playList);
+
 
 
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
