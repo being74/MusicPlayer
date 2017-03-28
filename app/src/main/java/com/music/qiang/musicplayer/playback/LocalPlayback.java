@@ -112,6 +112,151 @@ public class LocalPlayback implements IPlayback, AudioManager.OnAudioFocusChange
         }
     }
 
+    @Override
+    public void start() {
+
+    }
+
+    @Override
+    public void play(String id) {
+        mPlayOnFocusGain = true;
+        tryToGetAudioFocus();
+        boolean mediaHasChanged = !TextUtils.equals(id, mCurrentMediaId);
+        if (mediaHasChanged) {
+            mCurrentPosition = 0;
+            mCurrentMediaId = id;
+        }
+        if (mState == PlaybackStateCompat.STATE_PAUSED && !mediaHasChanged && mMediaPlayer != null) {
+            configMediaPlayerState();
+        } else {
+            try {
+                createMediaPlayerIfNeeded();
+                mState = PlaybackStateCompat.STATE_BUFFERING;
+                mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                Uri contentUri = ContentUris.withAppendedId(
+                        android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, Long.parseLong(id));
+                mMediaPlayer.setDataSource(mContext, contentUri);
+
+                mMediaPlayer.prepareAsync();
+                mWifiLock.acquire();
+
+                if (mCallback != null) {
+                    mCallback.onPlaybackStatusChanged(mState);
+                }
+
+            } catch (IOException ex) {
+                LogHelper.e(TAG, ex, "Exception playing song");
+                if (mCallback != null) {
+                    mCallback.onError(ex.getMessage());
+                }
+            }
+        }
+
+    }
+
+    @Override
+    public void pause() {
+        if (mState == PlaybackStateCompat.STATE_PLAYING) {
+            // Pause media player and cancel the 'foreground service' state.
+            if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
+                mMediaPlayer.pause();
+                mCurrentPosition = mMediaPlayer.getCurrentPosition();
+            }
+            // while paused, retain the MediaPlayer but give up audio focus
+            relaxResources(false);
+        }
+        mState = PlaybackStateCompat.STATE_PAUSED;
+        if (mCallback != null) {
+            mCallback.onPlaybackStatusChanged(mState);
+        }
+    }
+
+    @Override
+    public void seekTo(int position) {
+        if (mMediaPlayer == null) {
+            // If we do not have a current media player, simply update the current position
+            mCurrentPosition = position;
+        } else {
+            if (mMediaPlayer.isPlaying()) {
+                mState = PlaybackStateCompat.STATE_BUFFERING;
+            }
+            mMediaPlayer.seekTo(position);
+            if (mCallback != null) {
+                mCallback.onPlaybackStatusChanged(mState);
+            }
+        }
+    }
+
+    @Override
+    public void stop(boolean notifyListeners) {
+        mState = PlaybackStateCompat.STATE_STOPPED;
+        mCurrentPosition = getCurrentStreamPosition();
+        relaxResources(true);
+    }
+
+    @Override
+    public void setState(int state) {
+        this.mState = state;
+    }
+
+    @Override
+    public int getState() {
+        return this.mState;
+    }
+
+    @Override
+    public boolean isConnected() {
+        return true;
+    }
+
+    @Override
+    public boolean isPlaying() {
+        return mPlayOnFocusGain || (mMediaPlayer != null && mMediaPlayer.isPlaying());
+    }
+
+    @Override
+    public int getCurrentStreamPosition() {
+        return mMediaPlayer != null ? mMediaPlayer.getCurrentPosition() : mCurrentPosition;
+    }
+
+    @Override
+    public void setCurrentStreamPosition(int position) {
+        this.mCurrentPosition = position;
+    }
+
+    @Override
+    public void updateLastKnownStreamPosition() {
+        if (mMediaPlayer != null) {
+            mCurrentPosition = mMediaPlayer.getCurrentPosition();
+        }
+    }
+
+    @Override
+    public void setCurrentIndex(int index) {
+
+    }
+
+    @Override
+    public int getCurrentIndex() {
+        return 0;
+    }
+
+    @Override
+    public void setCurrentMediaId(String mediaId) {
+        this.mCurrentMediaId = mediaId;
+    }
+
+    @Override
+    public String getCurrentMediaId() {
+        return this.mCurrentMediaId;
+    }
+
+    @Override
+    public void setCallback(Callback callback) {
+        this.mCallback = callback;
+    }
+
+
     /**
      * 释放资源，包括WiFi锁和mediaplay对象等
      *
@@ -196,150 +341,6 @@ public class LocalPlayback implements IPlayback, AudioManager.OnAudioFocusChange
         if (mCallback != null) {
             mCallback.onPlaybackStatusChanged(mState);
         }
-    }
-
-    @Override
-    public void start() {
-
-    }
-
-    @Override
-    public void play(String id) {
-        mPlayOnFocusGain = true;
-        tryToGetAudioFocus();
-        boolean mediaHasChanged = !TextUtils.equals(id, mCurrentMediaId);
-        if (mediaHasChanged) {
-            mCurrentPosition = 0;
-            mCurrentMediaId = id;
-        }
-        if (mState == PlaybackStateCompat.STATE_PAUSED && !mediaHasChanged && mMediaPlayer != null) {
-            configMediaPlayerState();
-        } else {
-            try {
-                createMediaPlayerIfNeeded();
-                mState = PlaybackStateCompat.STATE_BUFFERING;
-                mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-                Uri contentUri = ContentUris.withAppendedId(
-                        android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, Long.parseLong(id));
-                mMediaPlayer.setDataSource(mContext, contentUri);
-
-                mMediaPlayer.prepareAsync();
-                mWifiLock.acquire();
-
-                if (mCallback != null) {
-                    mCallback.onPlaybackStatusChanged(mState);
-                }
-
-            } catch (IOException ex) {
-                LogHelper.e(TAG, ex, "Exception playing song");
-                if (mCallback != null) {
-                    mCallback.onError(ex.getMessage());
-                }
-            }
-        }
-
-    }
-
-    @Override
-    public void stop(boolean notifyListeners) {
-        mState = PlaybackStateCompat.STATE_STOPPED;
-        mCurrentPosition = getCurrentStreamPosition();
-        relaxResources(true);
-    }
-
-    @Override
-    public void setState(int state) {
-        this.mState = state;
-    }
-
-    @Override
-    public int getState() {
-        return this.mState;
-    }
-
-    @Override
-    public boolean isConnected() {
-        return true;
-    }
-
-    @Override
-    public boolean isPlaying() {
-        return mPlayOnFocusGain || (mMediaPlayer != null && mMediaPlayer.isPlaying());
-    }
-
-    @Override
-    public int getCurrentStreamPosition() {
-        return mMediaPlayer != null ? mMediaPlayer.getCurrentPosition() : mCurrentPosition;
-    }
-
-    @Override
-    public void setCurrentStreamPosition(int position) {
-        this.mCurrentPosition = position;
-    }
-
-    @Override
-    public void updateLastKnownStreamPosition() {
-        if (mMediaPlayer != null) {
-            mCurrentPosition = mMediaPlayer.getCurrentPosition();
-        }
-    }
-
-    @Override
-    public void setCurrentIndex(int index) {
-
-    }
-
-    @Override
-    public int getCurrentIndex() {
-        return 0;
-    }
-
-    @Override
-    public void pause() {
-        if (mState == PlaybackStateCompat.STATE_PLAYING) {
-            // Pause media player and cancel the 'foreground service' state.
-            if (mMediaPlayer != null && mMediaPlayer.isPlaying()) {
-                mMediaPlayer.pause();
-                mCurrentPosition = mMediaPlayer.getCurrentPosition();
-            }
-            // while paused, retain the MediaPlayer but give up audio focus
-            relaxResources(false);
-        }
-        mState = PlaybackStateCompat.STATE_PAUSED;
-        if (mCallback != null) {
-            mCallback.onPlaybackStatusChanged(mState);
-        }
-    }
-
-    @Override
-    public void seekTo(int position) {
-        if (mMediaPlayer == null) {
-            // If we do not have a current media player, simply update the current position
-            mCurrentPosition = position;
-        } else {
-            if (mMediaPlayer.isPlaying()) {
-                mState = PlaybackStateCompat.STATE_BUFFERING;
-            }
-            mMediaPlayer.seekTo(position);
-            if (mCallback != null) {
-                mCallback.onPlaybackStatusChanged(mState);
-            }
-        }
-    }
-
-    @Override
-    public void setCurrentMediaId(String mediaId) {
-        this.mCurrentMediaId = mediaId;
-    }
-
-    @Override
-    public String getCurrentMediaId() {
-        return this.mCurrentMediaId;
-    }
-
-    @Override
-    public void setCallback(Callback callback) {
-        this.mCallback = callback;
     }
 
     /**

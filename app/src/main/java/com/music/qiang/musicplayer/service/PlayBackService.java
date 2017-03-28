@@ -24,17 +24,23 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.music.qiang.musicplayer.R;
+import com.music.qiang.musicplayer.events.PlaybackEvent;
 import com.music.qiang.musicplayer.model.MusicFile;
 import com.music.qiang.musicplayer.playback.LocalPlayback;
 import com.music.qiang.musicplayer.playback.PlayBackManager;
+import com.music.qiang.musicplayer.playback.QueueManager;
 import com.music.qiang.musicplayer.ui.activity.MusicPlayActivity;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
 
 /**
  * 通过service方式管理后台播放音乐的服务
  */
-public class PlayBackService extends Service implements MediaPlayer.OnPreparedListener, MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener {
+public class PlayBackService extends Service {
 
     //*****************类和对象*******************
     private PlayBackManager playBackManager;
@@ -92,6 +98,7 @@ public class PlayBackService extends Service implements MediaPlayer.OnPreparedLi
     @Override
     public void onCreate() {
         super.onCreate();
+        EventBus.getDefault().register(this);
         Log.d("xuqiang", "service---onCreate---");
 
         HandlerThread thread = new HandlerThread("ServiceStartArgument",
@@ -101,16 +108,10 @@ public class PlayBackService extends Service implements MediaPlayer.OnPreparedLi
         mServiceLooper = thread.getLooper();
         mServiceHandler = new ServiceHandler(mServiceLooper);
 
-        mediaPlayer = new MediaPlayer();
+        /*mediaPlayer = new MediaPlayer();
         mediaPlayer.setOnPreparedListener(this);
         mediaPlayer.setOnCompletionListener(this);
-        mediaPlayer.setOnErrorListener(this);
-
-        // 创建播放类管理者
-        LocalPlayback playback = new LocalPlayback(this);
-        playBackManager = new PlayBackManager(playback, playList);
-
-
+        mediaPlayer.setOnErrorListener(this);*/
 
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         showNotification();
@@ -158,18 +159,24 @@ public class PlayBackService extends Service implements MediaPlayer.OnPreparedLi
      */
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        Log.d("xuqiang", "service---onStartCommand---");
         Bundle bundleObject = intent.getExtras();
         playList = (ArrayList<MusicFile>) bundleObject.getSerializable("playList");
         currentIndex = bundleObject.getInt("playIndex");
         musicId = playList.get(currentIndex).musicId;
 
         Log.d("xuqiang", "-----startId----" + startId);
-        Message msg = mServiceHandler.obtainMessage();
+        /*Message msg = mServiceHandler.obtainMessage();
         msg.arg1 = startId;
-        mServiceHandler.sendMessage(msg);
+        mServiceHandler.sendMessage(msg);*/
 
-        // If we get killed, after returning from here, restart
+
+        QueueManager queueManager = new QueueManager(playList);
+        LocalPlayback playback = new LocalPlayback(this);
+        // 创建播放类管理者
+        playBackManager = new PlayBackManager(playback, playList);
+        playBackManager.handlePlay();
+
+
         return START_STICKY;
     }
 
@@ -185,24 +192,7 @@ public class PlayBackService extends Service implements MediaPlayer.OnPreparedLi
         Toast.makeText(this, "service destory", Toast.LENGTH_SHORT).show();
         mediaPlayer.release();
         mediaPlayer = null;
-    }
-
-    @Override
-    public void onPrepared(MediaPlayer mp) {
-        Toast.makeText(this, "media prepared", Toast.LENGTH_SHORT).show();
-    }
-
-    @Override
-    public void onCompletion(MediaPlayer mp) {
-        Toast.makeText(this, "media onCompletion", Toast.LENGTH_SHORT).show();
-        currentIndex++;
-        refresh();
-    }
-
-    @Override
-    public boolean onError(MediaPlayer mp, int what, int extra) {
-        Toast.makeText(this, "media onError", Toast.LENGTH_SHORT).show();
-        return false;
+        EventBus.getDefault().unregister(this);
     }
 
     /**
@@ -234,6 +224,10 @@ public class PlayBackService extends Service implements MediaPlayer.OnPreparedLi
         startForeground(1, notification);
     }
 
+    @Subscribe(threadMode = ThreadMode.POSTING)
+    public void playBackEvent(PlaybackEvent event) {
+        Log.d("xuqiang", "haha: " + event.state);
+    }
 
     private void refresh() {
         mediaPlayer.reset();
