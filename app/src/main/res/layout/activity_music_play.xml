@@ -1,31 +1,147 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fitsSystemWindows="true"
-    android:orientation="vertical"
     tools:context="com.music.qiang.musicplayer.ui.activity.MusicPlayActivity">
 
-    <android.support.design.widget.AppBarLayout
-        android:id="@+id/app_bar_activity_main"
+    <ImageView
+        android:id="@+id/background_image"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:theme="@style/AppTheme.AppBarOverlay">
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fitsSystemWindows="true"
+        android:orientation="vertical">
 
         <android.support.v7.widget.Toolbar
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:background="?attr/colorPrimary"
+            android:background="@drawable/fullscreen_toolbar_bg_gradient"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
             app:popupTheme="@style/AppTheme.PopupOverlay"/>
 
-    </android.support.design.widget.AppBarLayout>
+        <!--<include layout="@layout/content_music_play" />-->
 
-    <!--<include layout="@layout/content_music_play" />-->
+        <!--<include layout="@layout/fragment_music_play"/>-->
 
-    <include layout="@layout/fragment_music_play"/>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:gravity="center">
 
-</LinearLayout>
+            <TextView
+                android:id="@+id/tv_fragment_music_play_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="16dp"
+                android:text="忽然"
+                android:textColor="@color/colorWhite"
+                android:textSize="18sp"/>
+
+            <TextView
+                android:id="@+id/tv_fragment_music_play_artist"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/tv_fragment_music_play_name"
+                android:layout_centerHorizontal="true"
+                android:layout_marginTop="14dp"
+                android:text="李志"
+                android:textColor="@color/colorEe"/>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="32dp"
+            android:layout_marginTop="32dp"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            android:paddingRight="@dimen/activity_horizontal_margin">
+
+            <SeekBar
+                android:id="@+id/sb_activity_music_play"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/colorGrayBE"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/sb_activity_music_play"
+                android:layout_marginTop="6dp"
+                android:text="00:00"
+                android:textColor="@color/colorGrayBE"
+                android:textSize="12sp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_below="@id/sb_activity_music_play"
+                android:layout_marginTop="6dp"
+                android:text="05:12"
+                android:textColor="@color/colorGrayBE"
+                android:textSize="12sp"/>
+
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:paddingLeft="@dimen/activity_horizontal_margin"
+            android:paddingRight="@dimen/activity_horizontal_margin">
+
+            <ImageView
+                android:id="@+id/ib_fragment_music_play"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:layout_centerInParent="true"
+                android:src="@mipmap/ic_music_pause"/>
+
+            <ImageView
+                android:id="@+id/ib_fragment_music_play_pre"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_centerVertical="true"
+                android:layout_marginRight="28dp"
+                android:layout_toLeftOf="@id/ib_fragment_music_play"
+                android:src="@mipmap/ic_music_play_rewind"/>
+
+            <ImageView
+                android:id="@+id/ib_fragment_music_play_next"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_centerVertical="true"
+                android:layout_marginLeft="28dp"
+                android:layout_toRightOf="@id/ib_fragment_music_play"
+                android:src="@mipmap/ic_music_play_forward"/>
+
+            <ImageView
+                android:id="@+id/ib_fragment_music_play_type"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_centerVertical="true"
+                android:src="@mipmap/ic_music_play_repeat"/>
+
+            <ImageView
+                android:id="@+id/ib_fragment_music_play_more"
+                android:layout_width="26dp"
+                android:layout_height="26dp"
+                android:layout_alignParentRight="true"
+                android:layout_centerVertical="true"
+                android:src="@mipmap/ic_music_play_more"/>
+
+        </RelativeLayout>
+
+    </LinearLayout>
+</FrameLayout>
