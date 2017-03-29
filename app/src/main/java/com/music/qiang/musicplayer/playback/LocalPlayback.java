@@ -65,6 +65,10 @@ public class LocalPlayback implements IPlayback, AudioManager.OnAudioFocusChange
     // *****************类和对象*******************
     private final Context mContext;
     /**
+     * 单例实例
+     */
+    private volatile static LocalPlayback instance;
+    /**
      * 媒体播放对象
      */
     private MediaPlayer mMediaPlayer;
@@ -81,13 +85,23 @@ public class LocalPlayback implements IPlayback, AudioManager.OnAudioFocusChange
      */
     private Callback mCallback;
 
-
-    public LocalPlayback(Context context) {
+    private LocalPlayback(Context context) {
         this.mContext = context;
         this.mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         this.mWifiLock = ((WifiManager) context.getSystemService(Context.WIFI_SERVICE))
                 .createWifiLock(WifiManager.WIFI_MODE_FULL, "musicplayer");
         this.mState = PlaybackStateCompat.STATE_NONE;
+    }
+
+    public static LocalPlayback getInstance(Context context) {
+        if (instance == null) {
+            synchronized (LocalPlayback.class) {
+                if (instance == null) {
+                    instance = new LocalPlayback(context);
+                }
+            }
+        }
+        return instance;
     }
 
     /**

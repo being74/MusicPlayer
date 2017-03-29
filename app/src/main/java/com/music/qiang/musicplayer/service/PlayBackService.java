@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
+import android.media.session.PlaybackState;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -171,7 +172,7 @@ public class PlayBackService extends Service {
 
 
         QueueManager queueManager = new QueueManager(playList);
-        LocalPlayback playback = new LocalPlayback(this);
+        LocalPlayback playback = LocalPlayback.getInstance(this);
         // 创建播放类管理者
         playBackManager = new PlayBackManager(playback, playList);
         playBackManager.handlePlay();
@@ -227,6 +228,15 @@ public class PlayBackService extends Service {
     @Subscribe(threadMode = ThreadMode.POSTING)
     public void playBackEvent(PlaybackEvent event) {
         Log.d("xuqiang", "haha: " + event.state);
+        switch (event.state) {
+            case PlaybackState.STATE_PAUSED:
+            case PlaybackState.STATE_BUFFERING:
+                playBackManager.handlePlay();
+                break;
+            case PlaybackState.STATE_PLAYING:
+                playBackManager.handlePause();
+                break;
+        }
     }
 
     private void refresh() {

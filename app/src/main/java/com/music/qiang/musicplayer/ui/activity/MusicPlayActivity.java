@@ -11,12 +11,14 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 import android.widget.TextView;
 
 import com.music.qiang.musicplayer.R;
 import com.music.qiang.musicplayer.events.PlaybackEvent;
 import com.music.qiang.musicplayer.model.MusicFile;
 import com.music.qiang.musicplayer.playback.IPlayback;
+import com.music.qiang.musicplayer.playback.LocalPlayback;
 import com.music.qiang.musicplayer.service.PlayBackService;
 import com.music.qiang.musicplayer.support.utils.FastBlurUtil;
 
@@ -33,6 +35,7 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
      */
     private ImageView playButton, playPre, playNext, background_image;
     private TextView musicName, musicArtist;
+    private SeekBar seekBar;
 
     //***************基本数据***************
     private ArrayList<MusicFile> playList;
@@ -86,12 +89,29 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
         playNext = (ImageView) findViewById(R.id.ib_fragment_music_play_next);
         musicName = (TextView) findViewById(R.id.tv_fragment_music_play_name);
         musicArtist = (TextView) findViewById(R.id.tv_fragment_music_play_artist);
+        seekBar = (SeekBar) findViewById(R.id.sb_activity_music_play);
     }
 
     private void registListener() {
         playButton.setOnClickListener(this);
         playPre.setOnClickListener(this);
         playNext.setOnClickListener(this);
+        seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+
+            }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
     }
 
     private void initData() {
@@ -101,9 +121,10 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
                 .into(background_image);*/
         setBlurBackground();
 
-
         musicName.setText(playList.get(playIndex).musicName);
         musicArtist.setText(playList.get(playIndex).musicArtist + " - " + playList.get(playIndex).musicAlbum);
+
+        Log.d("xuqiang" ,"seekBar.getMax() = " + seekBar.getMax());
     }
 
     /**
@@ -135,7 +156,8 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
                     playButton.setImageResource(R.mipmap.ic_music_pause);
                     iPlayback.play();
                 }*/
-                EventBus.getDefault().post(new PlaybackEvent(1));
+                LocalPlayback playback = LocalPlayback.getInstance(this);
+                EventBus.getDefault().post(new PlaybackEvent(playback.getState()));
                 break;
             case R.id.ib_fragment_music_play_pre:
                 break;
