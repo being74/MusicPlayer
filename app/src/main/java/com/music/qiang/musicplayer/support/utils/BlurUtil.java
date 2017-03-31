@@ -11,14 +11,20 @@ import android.renderscript.ScriptIntrinsicBlur;
 import android.util.Log;
 
 /**
- * Created by user on 2017/3/20.
+ * 图片模糊处理
+ * Created by xuqiang on 2017/3/20.
  */
 public class BlurUtil {
 
     @SuppressLint("NewApi")
     public static Bitmap fastblur(Context context, Bitmap sentBitmap, int radius) {
         if (Build.VERSION.SDK_INT > 16) { //判断SDK的版本，可以更换
-            Bitmap bitmap = sentBitmap.copy(sentBitmap.getConfig(), true);
+            Bitmap bitmap;
+            if (sentBitmap.getConfig() != null) {
+                bitmap = sentBitmap.copy(sentBitmap.getConfig(), true);
+            } else {
+                bitmap = sentBitmap.copy(Bitmap.Config.ARGB_8888, true);
+            }
             final RenderScript rs = RenderScript.create(context);
             final Allocation input = Allocation.createFromBitmap(rs, sentBitmap, Allocation.MipmapControl.MIPMAP_NONE, Allocation.USAGE_SCRIPT);
             final Allocation output = Allocation.createTyped(rs, input.getType());

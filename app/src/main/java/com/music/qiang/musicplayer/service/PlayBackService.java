@@ -4,13 +4,10 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
-import android.content.ContentUris;
 import android.content.Context;
 import android.content.Intent;
-import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.media.session.PlaybackState;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -26,6 +23,7 @@ import android.widget.Toast;
 
 import com.music.qiang.musicplayer.R;
 import com.music.qiang.musicplayer.events.PlaybackEvent;
+import com.music.qiang.musicplayer.events.QueueSkipEvent;
 import com.music.qiang.musicplayer.model.MusicFile;
 import com.music.qiang.musicplayer.playback.LocalPlayback;
 import com.music.qiang.musicplayer.playback.PlayBackManager;
@@ -53,7 +51,7 @@ public class PlayBackService extends Service {
 
     //*****************基本数据类型****************
     private int currentIndex = 0;
-    private long musicId;
+    private String musicId;
 
     private final class ServiceHandler extends Handler {
         public ServiceHandler(Looper looper) {
@@ -71,13 +69,12 @@ public class PlayBackService extends Service {
                 default:
                     // 开始播放
                     try {
-                        //Thread.sleep(5000);
-                        Uri contentUri = ContentUris.withAppendedId(
+                        /*Uri contentUri = ContentUris.withAppendedId(
                                 android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, musicId);
                         mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
                         mediaPlayer.setDataSource(getApplicationContext(), contentUri);
                         mediaPlayer.prepare();
-                        mediaPlayer.start();
+                        mediaPlayer.start();*/
                     } catch (Exception e) {
                         Thread.currentThread().interrupt();
                     }
@@ -93,9 +90,6 @@ public class PlayBackService extends Service {
     public PlayBackService() {
     }
 
-    /**
-     * Called by the system when the service is first created.  Do not call this method directly.
-     */
     @Override
     public void onCreate() {
         super.onCreate();
@@ -108,11 +102,6 @@ public class PlayBackService extends Service {
 
         mServiceLooper = thread.getLooper();
         mServiceHandler = new ServiceHandler(mServiceLooper);
-
-        /*mediaPlayer = new MediaPlayer();
-        mediaPlayer.setOnPreparedListener(this);
-        mediaPlayer.setOnCompletionListener(this);
-        mediaPlayer.setOnErrorListener(this);*/
 
         notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         showNotification();
@@ -170,13 +159,12 @@ public class PlayBackService extends Service {
         msg.arg1 = startId;
         mServiceHandler.sendMessage(msg);*/
 
-
         QueueManager queueManager = new QueueManager(playList);
+        queueManager.setCurrentQueue(playList, String.valueOf(musicId));
         LocalPlayback playback = LocalPlayback.getInstance(this);
         // 创建播放类管理者
-        playBackManager = new PlayBackManager(playback, playList);
+        playBackManager = new PlayBackManager(queueManager, playback, playList);
         playBackManager.handlePlay();
-
 
         return START_STICKY;
     }
@@ -225,6 +213,11 @@ public class PlayBackService extends Service {
         startForeground(1, notification);
     }
 
+    /**
+     * eventbus订阅者-播放状态修改
+     *
+     * @param event
+     */
     @Subscribe(threadMode = ThreadMode.POSTING)
     public void playBackEvent(PlaybackEvent event) {
         Log.d("xuqiang", "haha: " + event.state);
@@ -239,11 +232,21 @@ public class PlayBackService extends Service {
         }
     }
 
-    private void refresh() {
-        mediaPlayer.reset();
-        musicId = playList.get(currentIndex).musicId;
-        //musicId = intent.getLongExtra("ID", 0);
-        Message msg = mServiceHandler.obtainMessage();
-        mServiceHandler.sendMessage(msg);
+    /**
+     * eventbus订阅者-播放队列切换
+     *
+     * @param event
+     */
+    @Subscribe(threadMode = ThreadMode.POSTING)
+    public void queueSkipEvent(QueueSkipEvent event) {
+        Log.d("xuqiang", "haha: " + event.cmd);
+        switch (event.cmd) {
+            case 0:
+                playBackManager.handlePre();
+                break;
+            case 1:
+                playBackManager.handleNext();
+                break;
+        }
     }
 }

@@ -2,6 +2,8 @@ package com.music.qiang.musicplayer.playback;
 
 import com.music.qiang.musicplayer.model.MusicFile;
 
+import org.greenrobot.eventbus.EventBus;
+
 import java.util.ArrayList;
 
 /**
@@ -13,45 +15,100 @@ public class PlayBackManager implements IPlayback.Callback {
 
     // ***************类和对象***************
     private IPlayback iPlayback;
+    /**
+     * 播放队列管理
+     */
+    private QueueManager queueManager;
+
     // ***************基本数据***************
+    /**
+     * 播放列表
+     */
     private ArrayList<MusicFile> musicList;
 
 
-    public PlayBackManager(IPlayback playback, ArrayList<MusicFile> musicList) {
+    public PlayBackManager(QueueManager queueManager, IPlayback playback, ArrayList<MusicFile> musicList) {
+        this.queueManager = queueManager;
         this.musicList = musicList;
         this.iPlayback = playback;
         iPlayback.setCallback(this);
     }
 
+    /**
+     * 处理播放
+     */
     public void handlePlay() {
-        iPlayback.play(String.valueOf(musicList.get(0).musicId));
+        MusicFile file = queueManager.getCurrentMusic();
+        iPlayback.play(file.musicId);
     }
 
+    /**
+     * 处理暂停
+     */
     public void handlePause() {
         if (iPlayback.isPlaying()) {
             iPlayback.pause();
         }
     }
 
+    /**
+     * 切到上一首
+     */
+    public void handlePre() {
+        if (queueManager.moveToPre()) {
+            MusicFile file = queueManager.getCurrentMusic();
+            iPlayback.play(file.musicId);
+            // 发送变更事件
+            EventBus.getDefault().post(file);
+        }
+    }
+
+    /**
+     * 切到下一首
+     */
+    public void handleNext() {
+        if (queueManager.moveToNext()) {
+            MusicFile file = queueManager.getCurrentMusic();
+            iPlayback.play(file.musicId);
+            // 发送变更事件
+            EventBus.getDefault().post(file);
+        }
+    }
+
+    /**
+     * 处理停止
+     */
     public void handleStop() {
         iPlayback.stop(false);
     }
 
+    /**
+     * 在LocalPlayback中监听到mediaplay的onCompletion，通知该类进行调度处理
+     */
     @Override
     public void onCompletion() {
-
+        handleNext();
     }
 
+    /**
+     * 在LocalPlayback中监听到mediaplay的onPlaybackStatusChanged，通知该类进行调度处理
+     */
     @Override
     public void onPlaybackStatusChanged(int state) {
 
     }
 
+    /**
+     * 在LocalPlayback中监听到mediaplay的onError，通知该类进行调度处理
+     */
     @Override
     public void onError(String error) {
 
     }
 
+    /**
+     * LocalPlayback通知该类进行调度处理
+     */
     @Override
     public void setCurrentMediaId(String mediaId) {
 

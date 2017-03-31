@@ -397,7 +397,9 @@ public class LocalPlayback implements IPlayback, AudioManager.OnAudioFocusChange
      */
     @Override
     public void onCompletion(MediaPlayer mp) {
-
+        if (mCallback != null) {
+            mCallback.onCompletion();
+        }
     }
 
     /**
@@ -406,11 +408,14 @@ public class LocalPlayback implements IPlayback, AudioManager.OnAudioFocusChange
      * @param mp
      * @param what
      * @param extra
-     * @return
+     * @return true表示错误处理了
      */
     @Override
     public boolean onError(MediaPlayer mp, int what, int extra) {
-        return false;
+        if (mCallback != null) {
+            mCallback.onError("MediaPlayer error " + what + " (" + extra + ")");
+        }
+        return true;
     }
 
     /**

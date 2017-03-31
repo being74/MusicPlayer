@@ -27,10 +27,6 @@
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
             app:popupTheme="@style/AppTheme.PopupOverlay"/>
 
-        <!--<include layout="@layout/content_music_play" />-->
-
-        <!--<include layout="@layout/fragment_music_play"/>-->
-
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="0dp"
@@ -97,7 +93,7 @@
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="32dp"
             android:paddingLeft="@dimen/activity_horizontal_margin"
             android:paddingRight="@dimen/activity_horizontal_margin">
 

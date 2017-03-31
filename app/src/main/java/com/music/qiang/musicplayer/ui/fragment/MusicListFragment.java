@@ -148,7 +148,7 @@ public class MusicListFragment extends Fragment {
         cursor.moveToFirst();
         for (int i = 0; i < cursor.getCount(); i++) {
             MusicFile file = new MusicFile();
-            file.musicId = cursor.getInt(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID));
+            file.musicId = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID));
             file.musicName = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE));
             file.musicAlbum = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM));
             file.musicArtist = cursor.getString(cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST));

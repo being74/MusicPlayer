@@ -1,6 +1,5 @@
 package com.music.qiang.musicplayer.model;
 
-import android.graphics.Bitmap;
 import android.net.Uri;
 
 import java.io.Serializable;
@@ -14,7 +13,7 @@ public class MusicFile implements Serializable {
 
     private static final long serialVersionUID = -6068044584522608925L;
 
-    public int musicId; // 音乐ID
+    public String musicId; // 音乐ID
     public String musicName; // 音乐名称
     public String musicArtist; // 艺术家名称
     public String musicPath; // 音乐路径
