@@ -435,7 +435,11 @@ public class LocalPlayback implements IPlayback, AudioManager.OnAudioFocusChange
      */
     @Override
     public void onSeekComplete(MediaPlayer mp) {
-
+        mCurrentPosition = mp.getCurrentPosition();
+        if (mState == PlaybackStateCompat.STATE_BUFFERING) {
+            mMediaPlayer.start();
+            mState = PlaybackStateCompat.STATE_PLAYING;
+        }
     }
 
 

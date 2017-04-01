@@ -82,6 +82,10 @@ public class PlayBackManager implements IPlayback.Callback {
         iPlayback.stop(false);
     }
 
+    public void handleSeekto(int progress) {
+        iPlayback.seekTo(progress);
+    }
+
     /**
      * 在LocalPlayback中监听到mediaplay的onCompletion，通知该类进行调度处理
      */

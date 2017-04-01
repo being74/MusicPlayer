@@ -22,6 +22,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.music.qiang.musicplayer.R;
+import com.music.qiang.musicplayer.events.MusicProgressEvent;
 import com.music.qiang.musicplayer.events.PlaybackEvent;
 import com.music.qiang.musicplayer.events.QueueSkipEvent;
 import com.music.qiang.musicplayer.model.MusicFile;
@@ -248,5 +249,10 @@ public class PlayBackService extends Service {
                 playBackManager.handleNext();
                 break;
         }
+    }
+
+    @Subscribe(threadMode = ThreadMode.POSTING)
+    public void musicPorgressEvent(MusicProgressEvent event) {
+        playBackManager.handleSeekto(event.progress);
     }
 }
