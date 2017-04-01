@@ -59,31 +59,34 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="32dp"
-            android:layout_marginTop="32dp"
-            android:paddingLeft="@dimen/activity_horizontal_margin"
-            android:paddingRight="@dimen/activity_horizontal_margin">
+            android:layout_marginTop="32dp">
 
             <SeekBar
                 android:id="@+id/sb_activity_music_play"
                 android:layout_width="match_parent"
-                android:layout_height="1dp"
-                android:background="@color/colorGrayBE"/>
+                android:layout_height="wrap_content"
+                android:max="100"
+                android:progress="50"/>
 
             <TextView
+                android:id="@+id/tv_activity_music_play_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_below="@id/sb_activity_music_play"
                 android:layout_marginTop="6dp"
+                android:layout_marginLeft="@dimen/activity_horizontal_margin"
                 android:text="00:00"
                 android:textColor="@color/colorGrayBE"
                 android:textSize="12sp"/>
 
             <TextView
+                android:id="@+id/tv_activity_music_play_all_time"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentRight="true"
                 android:layout_below="@id/sb_activity_music_play"
                 android:layout_marginTop="6dp"
+                android:layout_marginRight="@dimen/activity_horizontal_margin"
                 android:text="05:12"
                 android:textColor="@color/colorGrayBE"
                 android:textSize="12sp"/>
