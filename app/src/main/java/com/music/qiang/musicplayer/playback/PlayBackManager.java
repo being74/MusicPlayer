@@ -1,5 +1,7 @@
 package com.music.qiang.musicplayer.playback;
 
+import android.support.v4.media.session.PlaybackStateCompat;
+
 import com.music.qiang.musicplayer.model.MusicFile;
 
 import org.greenrobot.eventbus.EventBus;
@@ -21,15 +23,10 @@ public class PlayBackManager implements IPlayback.Callback {
     private QueueManager queueManager;
 
     // ***************基本数据***************
-    /**
-     * 播放列表
-     */
-    private ArrayList<MusicFile> musicList;
 
 
-    public PlayBackManager(QueueManager queueManager, IPlayback playback, ArrayList<MusicFile> musicList) {
+    public PlayBackManager(QueueManager queueManager, IPlayback playback) {
         this.queueManager = queueManager;
-        this.musicList = musicList;
         this.iPlayback = playback;
         iPlayback.setCallback(this);
     }
@@ -40,6 +37,8 @@ public class PlayBackManager implements IPlayback.Callback {
     public void handlePlay() {
         MusicFile file = queueManager.getCurrentMusic();
         iPlayback.play(file.musicId);
+        // 发送变更事件
+        EventBus.getDefault().post(file);
     }
 
     /**

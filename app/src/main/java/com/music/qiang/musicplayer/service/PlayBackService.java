@@ -6,6 +6,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
 import android.media.session.PlaybackState;
 import android.os.AsyncTask;
@@ -17,8 +18,8 @@ import android.os.Looper;
 import android.os.Message;
 import android.os.Process;
 import android.support.annotation.Nullable;
-import android.support.v4.app.NotificationCompat;
 import android.util.Log;
+import android.widget.RemoteViews;
 import android.widget.Toast;
 
 import com.music.qiang.musicplayer.R;
@@ -29,7 +30,7 @@ import com.music.qiang.musicplayer.model.MusicFile;
 import com.music.qiang.musicplayer.playback.LocalPlayback;
 import com.music.qiang.musicplayer.playback.PlayBackManager;
 import com.music.qiang.musicplayer.playback.QueueManager;
-import com.music.qiang.musicplayer.ui.activity.MusicPlayActivity;
+import com.music.qiang.musicplayer.support.MediaNotificationManager;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -46,7 +47,6 @@ public class PlayBackService extends Service {
     private PlayBackManager playBackManager;
     private Looper mServiceLooper;
     private ServiceHandler mServiceHandler;
-    private NotificationManager notificationManager;
     private MediaPlayer mediaPlayer;
     private ArrayList<MusicFile> playList;
 
@@ -104,8 +104,8 @@ public class PlayBackService extends Service {
         mServiceLooper = thread.getLooper();
         mServiceHandler = new ServiceHandler(mServiceLooper);
 
-        notificationManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        showNotification();
+        /*MediaNotificationManager mediaNotificationManager = new MediaNotificationManager(this);
+        mediaNotificationManager.showNotification();*/
     }
 
     /**
@@ -155,17 +155,16 @@ public class PlayBackService extends Service {
         currentIndex = bundleObject.getInt("playIndex");
         musicId = playList.get(currentIndex).musicId;
 
-        Log.d("xuqiang", "-----startId----" + startId);
-        /*Message msg = mServiceHandler.obtainMessage();
-        msg.arg1 = startId;
-        mServiceHandler.sendMessage(msg);*/
-
-        QueueManager queueManager = new QueueManager(playList);
+        QueueManager queueManager = QueueManager.getInstance(playList);
         queueManager.setCurrentQueue(playList, String.valueOf(musicId));
-        LocalPlayback playback = LocalPlayback.getInstance(this);
+        LocalPlayback playback = LocalPlayback.getInstance();
         // 创建播放类管理者
-        playBackManager = new PlayBackManager(queueManager, playback, playList);
+        playBackManager = new PlayBackManager(queueManager, playback);
         playBackManager.handlePlay();
+
+        MediaNotificationManager mediaNotificationManager = new MediaNotificationManager(this);
+        mediaNotificationManager.showNotification();
+        //showRemoteViewsNotification();
 
         return START_STICKY;
     }
@@ -185,34 +184,35 @@ public class PlayBackService extends Service {
         EventBus.getDefault().unregister(this);
     }
 
-    /**
-     * Show a notification while this service is running.
-     */
-    private void showNotification() {
+    /*protected void showRemoteViewsNotification() {
+        RemoteViews mRemoteViews = new RemoteViews(getPackageName(), R.layout.fragment_play_back);
 
-        PendingIntent contentIntent = PendingIntent.getActivity(getApplicationContext(),
-                0, new Intent(this, MusicPlayActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
-        PendingIntent prevPendingIntent = PendingIntent.getActivity(getApplicationContext(),
-                0, new Intent(this, MusicPlayActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
-        PendingIntent pausePendingIntent = PendingIntent.getActivity(getApplicationContext(),
-                0, new Intent(this, MusicPlayActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
-        PendingIntent nextPendingIntent = PendingIntent.getActivity(getApplicationContext(),
-                0, new Intent(this, MusicPlayActivity.class), PendingIntent.FLAG_UPDATE_CURRENT);
 
-        NotificationCompat.Builder mBuilder = new NotificationCompat.Builder(this)
-                .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle("My notification")
-                .setContentText("Hello World!")
-                .addAction(R.mipmap.ic_music_play_rewind, "Previous", prevPendingIntent) // #0
-                .addAction(R.mipmap.ic_music_play, "Pause", pausePendingIntent)  // #1
-                .addAction(R.mipmap.ic_music_play_forward, "Next", nextPendingIntent)     // #2
-                .setStyle(new android.support.v7.app.NotificationCompat.MediaStyle())
-                .setContentIntent(contentIntent);
-        Notification notification = mBuilder.build();
+        Notification.Builder builder = new Notification.Builder(this);
+        builder.setTicker("Hello RemotesViews!");// 收到通知的时候用于显示于屏幕顶部通知栏的内容
+        builder.setSmallIcon(R.mipmap.ic_launcher);// 设置通知小图标,在下拉之前显示的图标
+        builder.setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher));// 落下后显示的图标
+        builder.setWhen(System.currentTimeMillis());
+        builder.setOngoing(true);// 不能被用户x掉，会一直显示，如音乐播放等
+        builder.setAutoCancel(true);// 自动取消
+        builder.setOnlyAlertOnce(true);// 只alert一次
+        builder.setDefaults(Notification.DEFAULT_ALL);
+        mRemoteViews.setImageViewResource(R.id.iv_fragment_play_back_head, R.mipmap.ic_black_rubber);
+        mRemoteViews.setTextViewText(R.id.tv_fragment_play_back_music_name, "这是自定义view的title");
+        mRemoteViews.setTextViewText(R.id.tv_fragment_play_back_music_artist, "这里是自定义view的内容");
+        //mRemoteViews.setTextViewText(R.id.notify_time, getCurrentTime());
+        builder.setContent(mRemoteViews);
 
-        notificationManager.notify(1, notification);
-        startForeground(1, notification);
-    }
+        Intent intent = new Intent(this, TestActivity.class);
+        //intent.putExtra(SINGLE, REMOTE_VIEWS_NOTIFICATION);
+        intent.setPackage(this.getPackageName());
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+        builder.setContentIntent(pendingIntent);
+        Notification notification = builder.build();
+        notification.flags = Notification.FLAG_AUTO_CANCEL;
+        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        manager.notify(0, notification);
+    }*/
 
     /**
      * eventbus订阅者-播放状态修改

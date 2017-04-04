@@ -10,6 +10,7 @@ import android.os.PowerManager;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.TextUtils;
 
+import com.music.qiang.musicplayer.application.MyApp;
 import com.music.qiang.musicplayer.support.utils.LogHelper;
 
 import java.io.IOException;
@@ -85,19 +86,19 @@ public class LocalPlayback implements IPlayback, AudioManager.OnAudioFocusChange
      */
     private Callback mCallback;
 
-    private LocalPlayback(Context context) {
-        this.mContext = context;
-        this.mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
-        this.mWifiLock = ((WifiManager) context.getSystemService(Context.WIFI_SERVICE))
+    private LocalPlayback() {
+        this.mContext = MyApp.getSelf();
+        this.mAudioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
+        this.mWifiLock = ((WifiManager) mContext.getSystemService(Context.WIFI_SERVICE))
                 .createWifiLock(WifiManager.WIFI_MODE_FULL, "musicplayer");
         this.mState = PlaybackStateCompat.STATE_NONE;
     }
 
-    public static LocalPlayback getInstance(Context context) {
+    public static LocalPlayback getInstance() {
         if (instance == null) {
             synchronized (LocalPlayback.class) {
                 if (instance == null) {
-                    instance = new LocalPlayback(context);
+                    instance = new LocalPlayback();
                 }
             }
         }
@@ -140,7 +141,9 @@ public class LocalPlayback implements IPlayback, AudioManager.OnAudioFocusChange
             mCurrentPosition = 0;
             mCurrentMediaId = id;
         }
-        if (mState == PlaybackStateCompat.STATE_PAUSED && !mediaHasChanged && mMediaPlayer != null) {
+        if (mState == PlaybackStateCompat.STATE_PLAYING && !mediaHasChanged && mMediaPlayer != null) {
+
+        } else if (mState == PlaybackStateCompat.STATE_PAUSED && !mediaHasChanged && mMediaPlayer != null) {
             configMediaPlayerState();
         } else {
             try {

@@ -93,20 +93,22 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
     protected void onStop() {
         super.onStop();
         Log.d("xuqiang", "----------onStop----------");
-        EventBus.getDefault().unregister(this);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        EventBus.getDefault().unregister(this);
         stopSeekbarUpdate();
         mExecutorService.shutdown();
     }
 
     private void fetchIntents() {
         Bundle bundleObject = getIntent().getExtras();
-        playList = (ArrayList<MusicFile>) bundleObject.getSerializable("playList");
-        playIndex = bundleObject.getInt("playIndex");
+        if (bundleObject != null) {
+            playList = (ArrayList<MusicFile>) bundleObject.getSerializable("playList");
+            playIndex = bundleObject.getInt("playIndex");
+        }
     }
 
     private void initViews() {
@@ -205,7 +207,7 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
                 .load(ContentUris.withAppendedId(sArtworkUri, playList.get(playIndex).musicAlubmId))
                 .error(R.mipmap.ic_black_rubber)
                 .into(background_image);*/
-        localPlayback = LocalPlayback.getInstance(this);
+        localPlayback = LocalPlayback.getInstance();
         setBlurBackground(file);
 
         setTitle(file.musicName);
@@ -247,7 +249,7 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.ib_fragment_music_play:
-                LocalPlayback playback = LocalPlayback.getInstance(this);
+                LocalPlayback playback = LocalPlayback.getInstance();
                 switch (playback.getState()) {
                     case PlaybackState.STATE_PAUSED:
                     case PlaybackState.STATE_BUFFERING:

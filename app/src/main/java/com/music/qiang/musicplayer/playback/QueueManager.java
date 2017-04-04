@@ -2,6 +2,7 @@ package com.music.qiang.musicplayer.playback;
 
 import com.music.qiang.musicplayer.model.MusicFile;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
@@ -14,9 +15,24 @@ public class QueueManager {
     private int mCurrentIndex;
     private List<MusicFile> mPlayingQueue;
 
-    public QueueManager(List<MusicFile> queue) {
-        this.mPlayingQueue = queue;
+    private static QueueManager instance;
+
+    private QueueManager(List<MusicFile> queue) {
+        if (queue != null && queue.size() > 0) {
+            this.mPlayingQueue = queue;
+        }
         mCurrentIndex = 0;
+    }
+
+    public static QueueManager getInstance(List<MusicFile> queue) {
+        if (instance == null) {
+            synchronized (QueueManager.class) {
+                if (instance == null) {
+                    instance = new QueueManager(queue);
+                }
+            }
+        }
+        return instance;
     }
 
     /*public void setQueueFromList(String initialMediaId) {
@@ -37,6 +53,14 @@ public class QueueManager {
         mCurrentIndex = Math.max(index, 0);
 
         //mListener.onQueueUpdated(title, newQueue);
+    }
+
+    public List<MusicFile> getCurrentQueue() {
+        if (mPlayingQueue != null && mPlayingQueue.size() > 0) {
+            return mPlayingQueue;
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -92,5 +116,9 @@ public class QueueManager {
      */
     public MusicFile getCurrentMusic() {
         return mPlayingQueue.get(mCurrentIndex);
+    }
+
+    public int getCurrentIndex() {
+        return mCurrentIndex;
     }
 }
