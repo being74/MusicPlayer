@@ -11,5 +11,6 @@
     <color name="colorGrayBE">#bebebe</color>
     <color name="colorWhite">#ffffff</color>
     <color name="transparent">#00000000</color>
+    <color name="colorGray42">#ff424242</color>
 
 </resources>
