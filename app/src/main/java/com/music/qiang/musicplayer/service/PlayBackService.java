@@ -1,15 +1,10 @@
 package com.music.qiang.musicplayer.service;
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.BitmapFactory;
 import android.media.MediaPlayer;
 import android.media.session.PlaybackState;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -19,10 +14,7 @@ import android.os.Message;
 import android.os.Process;
 import android.support.annotation.Nullable;
 import android.util.Log;
-import android.widget.RemoteViews;
-import android.widget.Toast;
 
-import com.music.qiang.musicplayer.R;
 import com.music.qiang.musicplayer.events.MusicProgressEvent;
 import com.music.qiang.musicplayer.events.PlaybackEvent;
 import com.music.qiang.musicplayer.events.QueueSkipEvent;
@@ -45,6 +37,7 @@ public class PlayBackService extends Service {
 
     //*****************类和对象*******************
     private PlayBackManager playBackManager;
+    private MediaNotificationManager mediaNotificationManager;
     private Looper mServiceLooper;
     private ServiceHandler mServiceHandler;
     private MediaPlayer mediaPlayer;
@@ -95,7 +88,6 @@ public class PlayBackService extends Service {
     public void onCreate() {
         super.onCreate();
         EventBus.getDefault().register(this);
-        Log.d("xuqiang", "service---onCreate---");
 
         HandlerThread thread = new HandlerThread("ServiceStartArgument",
                 Process.THREAD_PRIORITY_BACKGROUND);
@@ -104,35 +96,11 @@ public class PlayBackService extends Service {
         mServiceLooper = thread.getLooper();
         mServiceHandler = new ServiceHandler(mServiceLooper);
 
-        /*MediaNotificationManager mediaNotificationManager = new MediaNotificationManager(this);
-        mediaNotificationManager.showNotification();*/
+        mediaNotificationManager = new MediaNotificationManager(this);
+        mediaNotificationManager.showNotification();
     }
 
     /**
-     * Called by the system every time a client explicitly starts the service by calling
-     * {@link Context#startService}, providing the arguments it supplied and a
-     * unique integer token representing the start request.  Do not call this method directly.
-     * <p>
-     * <p>For backwards compatibility, the default implementation calls
-     * {@link #onStart} and returns either {@link #START_STICKY}
-     * or {@link #START_STICKY_COMPATIBILITY}.
-     * <p>
-     * <p>If you need your application to run on platform versions prior to API
-     * level 5, you can use the following model to handle the older {@link #onStart}
-     * callback in that case.  The <code>handleCommand</code> method is implemented by
-     * you as appropriate:
-     * <p>
-     * {@sample development/samples/ApiDemos/src/com/example/android/apis/app/ForegroundService.java
-     * start_compatibility}
-     * <p>
-     * <p class="caution">Note that the system calls this on your
-     * service's main thread.  A service's main thread is the same
-     * thread where UI operations take place for Activities running in the
-     * same process.  You should always avoid stalling the main
-     * thread's event loop.  When doing long-running operations,
-     * network calls, or heavy disk I/O, you should kick off a new
-     * thread, or use {@link AsyncTask}.</p>
-     *
      * @param intent  The Intent supplied to {@link Context#startService},
      *                as given.  This may be null if the service is being restarted after
      *                its process has gone away, and it had previously returned anything
@@ -162,10 +130,6 @@ public class PlayBackService extends Service {
         playBackManager = new PlayBackManager(queueManager, playback);
         playBackManager.handlePlay();
 
-        MediaNotificationManager mediaNotificationManager = new MediaNotificationManager(this);
-        mediaNotificationManager.showNotification();
-        //showRemoteViewsNotification();
-
         return START_STICKY;
     }
 
@@ -178,41 +142,11 @@ public class PlayBackService extends Service {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        Toast.makeText(this, "service destory", Toast.LENGTH_SHORT).show();
+        EventBus.getDefault().unregister(this);
         mediaPlayer.release();
         mediaPlayer = null;
-        EventBus.getDefault().unregister(this);
+        mediaNotificationManager.stopNotification();
     }
-
-    /*protected void showRemoteViewsNotification() {
-        RemoteViews mRemoteViews = new RemoteViews(getPackageName(), R.layout.fragment_play_back);
-
-
-        Notification.Builder builder = new Notification.Builder(this);
-        builder.setTicker("Hello RemotesViews!");// 收到通知的时候用于显示于屏幕顶部通知栏的内容
-        builder.setSmallIcon(R.mipmap.ic_launcher);// 设置通知小图标,在下拉之前显示的图标
-        builder.setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher));// 落下后显示的图标
-        builder.setWhen(System.currentTimeMillis());
-        builder.setOngoing(true);// 不能被用户x掉，会一直显示，如音乐播放等
-        builder.setAutoCancel(true);// 自动取消
-        builder.setOnlyAlertOnce(true);// 只alert一次
-        builder.setDefaults(Notification.DEFAULT_ALL);
-        mRemoteViews.setImageViewResource(R.id.iv_fragment_play_back_head, R.mipmap.ic_black_rubber);
-        mRemoteViews.setTextViewText(R.id.tv_fragment_play_back_music_name, "这是自定义view的title");
-        mRemoteViews.setTextViewText(R.id.tv_fragment_play_back_music_artist, "这里是自定义view的内容");
-        //mRemoteViews.setTextViewText(R.id.notify_time, getCurrentTime());
-        builder.setContent(mRemoteViews);
-
-        Intent intent = new Intent(this, TestActivity.class);
-        //intent.putExtra(SINGLE, REMOTE_VIEWS_NOTIFICATION);
-        intent.setPackage(this.getPackageName());
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
-        builder.setContentIntent(pendingIntent);
-        Notification notification = builder.build();
-        notification.flags = Notification.FLAG_AUTO_CANCEL;
-        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        manager.notify(0, notification);
-    }*/
 
     /**
      * eventbus订阅者-播放状态修改
@@ -254,5 +188,14 @@ public class PlayBackService extends Service {
     @Subscribe(threadMode = ThreadMode.POSTING)
     public void musicPorgressEvent(MusicProgressEvent event) {
         playBackManager.handleSeekto(event.progress);
+    }
+
+    /**
+     * 当前播放变更时，对ui重新赋值
+     * @param file
+     */
+    @Subscribe(threadMode = ThreadMode.POSTING)
+    public void mediaUpdateEvent(MusicFile file) {
+        mediaNotificationManager.refreshUI(file);
     }
 }

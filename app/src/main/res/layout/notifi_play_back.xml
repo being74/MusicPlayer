@@ -1,21 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/ll_notifi_play_back"
-    android:layout_width="match_parent"
-    android:layout_height="120dp"
-    android:orientation="horizontal">
+              android:layout_width="match_parent"
+              android:layout_height="120dp"
+              android:orientation="horizontal"
+              android:background="@color/colorGray42">
 
     <ImageView
         android:id="@+id/iv_notifi_play_back_thumb"
         android:layout_width="120dp"
         android:layout_height="match_parent"
-        android:src="@mipmap/ic_black_rubber" />
+        android:src="@mipmap/ic_black_rubber"/>
 
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginLeft="8dp"
-        android:background="@color/colorGrayFa"
+        android:layout_marginLeft="12dp"
         android:orientation="vertical"
         android:paddingBottom="12dp"
         android:paddingTop="12dp">
@@ -25,8 +24,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="忽然"
-            android:textColor="@color/colorBlack2c"
-            android:textSize="16sp" />
+            android:textColor="@color/colorWhite"
+            android:textSize="16sp"/>
 
         <TextView
             android:id="@+id/tv_notifi_play_back_artist"
@@ -35,22 +34,22 @@
             android:layout_below="@id/tv_notifi_play_back_name"
             android:layout_marginTop="6dp"
             android:text="李志"
-            android:textColor="@color/colorBlack2c"
-            android:textSize="14dp" />
+            android:textSize="14sp"
+            android:textColor="@color/colorWhite"/>
 
-        <View
+        <ImageView
             android:layout_width="match_parent"
             android:layout_height="1px"
             android:layout_below="@id/tv_notifi_play_back_artist"
             android:layout_marginTop="12dp"
-            android:background="@color/colorBlack2c" />
+            android:background="@color/colorGrayBE"/>
 
         <ImageView
             android:id="@+id/iv_notifi_play_back_pre"
             android:layout_width="28dp"
             android:layout_height="28dp"
             android:layout_alignParentBottom="true"
-            android:src="@mipmap/ic_music_play_rewind_dark" />
+            android:src="@mipmap/ic_music_play_rewind"/>
 
         <ImageView
             android:id="@+id/iv_notifi_play_back_play"
@@ -59,7 +58,7 @@
             android:layout_alignParentBottom="true"
             android:layout_marginLeft="16dp"
             android:layout_toRightOf="@id/iv_notifi_play_back_pre"
-            android:src="@mipmap/ic_music_play_dark" />
+            android:src="@mipmap/ic_music_play"/>
 
         <ImageView
             android:id="@+id/iv_notifi_play_back_next"
@@ -68,7 +67,7 @@
             android:layout_alignParentBottom="true"
             android:layout_marginLeft="16dp"
             android:layout_toRightOf="@id/iv_notifi_play_back_play"
-            android:src="@mipmap/ic_music_play_forward_dark" />
+            android:src="@mipmap/ic_music_play_forward"/>
 
     </RelativeLayout>
 </LinearLayout>
