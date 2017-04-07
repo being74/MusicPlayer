@@ -126,14 +126,14 @@
                 android:src="@mipmap/ic_music_play_forward"/>
 
             <ImageView
-                android:id="@+id/ib_fragment_music_play_type"
+                android:id="@+id/iv_activity_music_play_type"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerVertical="true"
                 android:src="@mipmap/ic_music_play_repeat"/>
 
             <ImageView
-                android:id="@+id/ib_fragment_music_play_more"
+                android:id="@+id/iv_activity_music_play_more"
                 android:layout_width="26dp"
                 android:layout_height="26dp"
                 android:layout_alignParentRight="true"

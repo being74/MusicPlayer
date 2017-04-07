@@ -23,6 +23,8 @@
             android:id="@+id/tv_notifi_play_back_name"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:singleLine="true"
+            android:ellipsize="end"
             android:text="忽然"
             android:textColor="@color/colorWhite"
             android:textSize="16sp"/>
@@ -33,6 +35,8 @@
             android:layout_height="wrap_content"
             android:layout_below="@id/tv_notifi_play_back_name"
             android:layout_marginTop="6dp"
+            android:singleLine="true"
+            android:ellipsize="end"
             android:text="李志"
             android:textSize="14sp"
             android:textColor="@color/colorWhite"/>

@@ -1,12 +1,9 @@
 package com.music.qiang.musicplayer.playback;
 
-import android.support.v4.media.session.PlaybackStateCompat;
-
+import com.music.qiang.musicplayer.events.PlaybackEvent;
 import com.music.qiang.musicplayer.model.MusicFile;
 
 import org.greenrobot.eventbus.EventBus;
-
-import java.util.ArrayList;
 
 /**
  * 播放调度管理类
@@ -36,9 +33,11 @@ public class PlayBackManager implements IPlayback.Callback {
      */
     public void handlePlay() {
         MusicFile file = queueManager.getCurrentMusic();
-        iPlayback.play(file.musicId);
-        // 发送变更事件
-        EventBus.getDefault().post(file);
+        if (file != null) {
+            iPlayback.play(file.musicId);
+            // 发送变更事件
+            EventBus.getDefault().post(file);
+        }
     }
 
     /**
@@ -56,9 +55,11 @@ public class PlayBackManager implements IPlayback.Callback {
     public void handlePre() {
         if (queueManager.moveToPre()) {
             MusicFile file = queueManager.getCurrentMusic();
-            iPlayback.play(file.musicId);
-            // 发送变更事件
-            EventBus.getDefault().post(file);
+            if (file != null) {
+                iPlayback.play(file.musicId);
+                // 发送变更事件
+                EventBus.getDefault().post(file);
+            }
         }
     }
 
@@ -68,9 +69,11 @@ public class PlayBackManager implements IPlayback.Callback {
     public void handleNext() {
         if (queueManager.moveToNext()) {
             MusicFile file = queueManager.getCurrentMusic();
-            iPlayback.play(file.musicId);
-            // 发送变更事件
-            EventBus.getDefault().post(file);
+            if (file != null) {
+                iPlayback.play(file.musicId);
+                // 发送变更事件
+                EventBus.getDefault().post(file);
+            }
         }
     }
 
@@ -98,7 +101,7 @@ public class PlayBackManager implements IPlayback.Callback {
      */
     @Override
     public void onPlaybackStatusChanged(int state) {
-
+        EventBus.getDefault().post(new PlaybackEvent(state));
     }
 
     /**

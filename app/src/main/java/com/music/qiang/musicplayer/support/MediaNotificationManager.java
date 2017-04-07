@@ -8,14 +8,15 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.BitmapFactory;
+import android.media.session.PlaybackState;
 import android.net.Uri;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.app.NotificationManagerCompat;
 import android.widget.RemoteViews;
 
 import com.music.qiang.musicplayer.R;
-import com.music.qiang.musicplayer.events.PlaybackEvent;
 import com.music.qiang.musicplayer.events.QueueSkipEvent;
+import com.music.qiang.musicplayer.events.ServiceControlEvent;
 import com.music.qiang.musicplayer.model.MusicFile;
 import com.music.qiang.musicplayer.playback.LocalPlayback;
 import com.music.qiang.musicplayer.service.PlayBackService;
@@ -77,10 +78,10 @@ public class MediaNotificationManager extends BroadcastReceiver {
         final String action = intent.getAction();
         switch (action) {
             case ACTION_PLAY:
-                EventBus.getDefault().post(new PlaybackEvent(LocalPlayback.getInstance().getState()));
+                EventBus.getDefault().post(new ServiceControlEvent(LocalPlayback.getInstance().getState()));
                 break;
             case ACTION_PAUSE:
-                EventBus.getDefault().post(new PlaybackEvent(LocalPlayback.getInstance().getState()));
+                EventBus.getDefault().post(new ServiceControlEvent(LocalPlayback.getInstance().getState()));
                 break;
             case ACTION_PREV:
                 EventBus.getDefault().post(new QueueSkipEvent(0));
@@ -114,8 +115,6 @@ public class MediaNotificationManager extends BroadcastReceiver {
             builder.setOnlyAlertOnce(true);// 只alert一次
             builder.setCustomContentView(mRemoteViews);
             builder.setSound(null);
-            builder.setDefaults(Notification.DEFAULT_ALL);
-            //mRemoteViews.setTextViewText(R.id.notify_time, getCurrentTime());
             //builder.setContent(mRemoteViews);
 
             resultIntent = new Intent(mPlayBackService, MusicPlayActivity.class);
@@ -157,10 +156,29 @@ public class MediaNotificationManager extends BroadcastReceiver {
         }
     }
 
+    /**
+     * 更新remoteViews
+     * @param file
+     */
     public void refreshUI(MusicFile file) {
-        mRemoteViews.setImageViewUri(R.id.iv_notifi_play_back_thumb, ContentUris.withAppendedId(sArtworkUri, file.musicAlubmId));
-        mRemoteViews.setTextViewText(R.id.tv_notifi_play_back_name, file.musicName);
-        mRemoteViews.setTextViewText(R.id.tv_notifi_play_back_artist, file.musicArtist);
+        if (file != null) {
+            mRemoteViews.setImageViewUri(R.id.iv_notifi_play_back_thumb, ContentUris.withAppendedId(sArtworkUri, file.musicAlubmId));
+            mRemoteViews.setTextViewText(R.id.tv_notifi_play_back_name, file.musicName);
+            mRemoteViews.setTextViewText(R.id.tv_notifi_play_back_artist, file.musicArtist);
+        }
+
+        LocalPlayback localPlayback = LocalPlayback.getInstance();
+        switch (localPlayback.getState()) {
+            case PlaybackState.STATE_PAUSED:
+                mRemoteViews.setImageViewResource(R.id.iv_notifi_play_back_play, R.mipmap.ic_music_play);
+                break;
+            case PlaybackState.STATE_BUFFERING:
+                mRemoteViews.setImageViewResource(R.id.iv_notifi_play_back_play, R.mipmap.ic_music_play);
+                break;
+            case PlaybackState.STATE_PLAYING:
+                mRemoteViews.setImageViewResource(R.id.iv_notifi_play_back_play, R.mipmap.ic_music_pause);
+                break;
+        }
 
         Notification notification = builder.build();
         notification.contentView = mRemoteViews;

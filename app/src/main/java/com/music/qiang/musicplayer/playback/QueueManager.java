@@ -2,7 +2,7 @@ package com.music.qiang.musicplayer.playback;
 
 import com.music.qiang.musicplayer.model.MusicFile;
 
-import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -35,9 +35,23 @@ public class QueueManager {
         return instance;
     }
 
-    /*public void setQueueFromList(String initialMediaId) {
-        setCurrentQueue();
-    }*/
+    /**
+     * 获取随机播放队列
+     *
+     * @param newQueue
+     * @param initialMediaId
+     */
+    public void setRandomQueue(List<MusicFile> newQueue, String initialMediaId) {
+        mPlayingQueue = newQueue;
+
+        Collections.shuffle(mPlayingQueue);
+        int index = 0;
+        if (initialMediaId != null) {
+            index = getIndexOnQueue(initialMediaId);
+        }
+        mCurrentIndex = Math.max(index, 0);
+
+    }
 
     public void setCurrentQueue(List<MusicFile> newQueue) {
         setCurrentQueue(newQueue, null);
@@ -115,10 +129,15 @@ public class QueueManager {
      * @return MusicFile对象
      */
     public MusicFile getCurrentMusic() {
-        return mPlayingQueue.get(mCurrentIndex);
+        if (mPlayingQueue != null && mPlayingQueue.size() > 0) {
+            return mPlayingQueue.get(mCurrentIndex);
+        } else {
+            return null;
+        }
     }
 
     public int getCurrentIndex() {
         return mCurrentIndex;
     }
+
 }

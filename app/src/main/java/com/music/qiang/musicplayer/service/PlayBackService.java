@@ -16,13 +16,16 @@ import android.support.annotation.Nullable;
 import android.util.Log;
 
 import com.music.qiang.musicplayer.events.MusicProgressEvent;
+import com.music.qiang.musicplayer.events.PlayModeEvent;
 import com.music.qiang.musicplayer.events.PlaybackEvent;
 import com.music.qiang.musicplayer.events.QueueSkipEvent;
+import com.music.qiang.musicplayer.events.ServiceControlEvent;
 import com.music.qiang.musicplayer.model.MusicFile;
 import com.music.qiang.musicplayer.playback.LocalPlayback;
 import com.music.qiang.musicplayer.playback.PlayBackManager;
 import com.music.qiang.musicplayer.playback.QueueManager;
 import com.music.qiang.musicplayer.support.MediaNotificationManager;
+import com.music.qiang.musicplayer.support.utils.StringUtils;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -36,6 +39,7 @@ import java.util.ArrayList;
 public class PlayBackService extends Service {
 
     //*****************类和对象*******************
+    private QueueManager queueManager;
     private PlayBackManager playBackManager;
     private MediaNotificationManager mediaNotificationManager;
     private Looper mServiceLooper;
@@ -45,7 +49,12 @@ public class PlayBackService extends Service {
 
     //*****************基本数据类型****************
     private int currentIndex = 0;
+    /**
+     * 播放模式，0-列表循环；1-单曲循环；2-随机播放
+     */
+    private int currentMode = 0;
     private String musicId;
+    private String from;
 
     private final class ServiceHandler extends Handler {
         public ServiceHandler(Looper looper) {
@@ -119,12 +128,31 @@ public class PlayBackService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Bundle bundleObject = intent.getExtras();
-        playList = (ArrayList<MusicFile>) bundleObject.getSerializable("playList");
-        currentIndex = bundleObject.getInt("playIndex");
-        musicId = playList.get(currentIndex).musicId;
+        from = bundleObject.getString("from");
+        currentMode = bundleObject.getInt("currentMode");
+        if (!StringUtils.isNullOrEmpty(from) && "list".equals(from)) {
+            playList = (ArrayList<MusicFile>) bundleObject.getSerializable("playList");
+            currentIndex = bundleObject.getInt("playIndex");
+            musicId = playList.get(currentIndex).musicId;
+        } else {
+            playList = null;
+        }
 
-        QueueManager queueManager = QueueManager.getInstance(playList);
-        queueManager.setCurrentQueue(playList, String.valueOf(musicId));
+        if (playList != null && playList.size() > 0) {
+            queueManager = QueueManager.getInstance(playList);
+            // 设置队列播放模式 0-列表循环；1-单曲循环；2-随机播放
+            if (0 == currentMode) {
+                queueManager.setCurrentQueue(playList, String.valueOf(musicId));
+            } else if (1 == currentMode) {
+
+            } else if (2 == currentMode) {
+                queueManager.setRandomQueue(playList, String.valueOf(musicId));
+            }
+        } else {
+            queueManager = QueueManager.getInstance(null);
+        }
+
+
         LocalPlayback playback = LocalPlayback.getInstance();
         // 创建播放类管理者
         playBackManager = new PlayBackManager(queueManager, playback);
@@ -148,14 +176,9 @@ public class PlayBackService extends Service {
         mediaNotificationManager.stopNotification();
     }
 
-    /**
-     * eventbus订阅者-播放状态修改
-     *
-     * @param event
-     */
     @Subscribe(threadMode = ThreadMode.POSTING)
-    public void playBackEvent(PlaybackEvent event) {
-        Log.d("xuqiang", "haha: " + event.state);
+    public void playControlEvent(ServiceControlEvent event) {
+        mediaNotificationManager.refreshUI(null);
         switch (event.state) {
             case PlaybackState.STATE_PAUSED:
             case PlaybackState.STATE_BUFFERING:
@@ -168,13 +191,22 @@ public class PlayBackService extends Service {
     }
 
     /**
+     * eventbus订阅者-播放状态修改
+     *
+     * @param event
+     */
+    @Subscribe(threadMode = ThreadMode.POSTING)
+    public void playBackEvent(PlaybackEvent event) {
+        mediaNotificationManager.refreshUI(null);
+    }
+
+    /**
      * eventbus订阅者-播放队列切换
      *
      * @param event
      */
     @Subscribe(threadMode = ThreadMode.POSTING)
     public void queueSkipEvent(QueueSkipEvent event) {
-        Log.d("xuqiang", "haha: " + event.cmd);
         switch (event.cmd) {
             case 0:
                 playBackManager.handlePre();
@@ -185,6 +217,10 @@ public class PlayBackService extends Service {
         }
     }
 
+    /**
+     * 拖动进度条
+     * @param event
+     */
     @Subscribe(threadMode = ThreadMode.POSTING)
     public void musicPorgressEvent(MusicProgressEvent event) {
         playBackManager.handleSeekto(event.progress);
@@ -197,5 +233,28 @@ public class PlayBackService extends Service {
     @Subscribe(threadMode = ThreadMode.POSTING)
     public void mediaUpdateEvent(MusicFile file) {
         mediaNotificationManager.refreshUI(file);
+    }
+
+    /**
+     * eventbus订阅者-播放队列切换
+     *
+     * @param event
+     */
+    @Subscribe(threadMode = ThreadMode.POSTING)
+    public void modeChangeEvent(PlayModeEvent event) {
+        switch (event.mode) {
+            // 列表循环
+            case 0:
+                queueManager.setCurrentQueue(null);
+                break;
+            // 单曲循环
+            case 1:
+                playBackManager.handleNext();
+                break;
+            // 随机播放
+            case 2:
+                queueManager.setRandomQueue(null, null);
+                break;
+        }
     }
 }

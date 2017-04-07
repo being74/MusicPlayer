@@ -16,9 +16,9 @@ import android.widget.TextView;
 
 import com.music.qiang.musicplayer.R;
 import com.music.qiang.musicplayer.events.PlaybackEvent;
+import com.music.qiang.musicplayer.events.ServiceControlEvent;
 import com.music.qiang.musicplayer.model.MusicFile;
 import com.music.qiang.musicplayer.playback.LocalPlayback;
-import com.music.qiang.musicplayer.playback.QueueManager;
 import com.music.qiang.musicplayer.support.utils.LogHelper;
 import com.music.qiang.musicplayer.support.utils.StringUtils;
 import com.music.qiang.musicplayer.ui.activity.MusicPlayActivity;
@@ -27,8 +27,6 @@ import com.squareup.picasso.Picasso;
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
-
-import java.util.ArrayList;
 
 /**
  * 底部播放控制器
@@ -105,7 +103,7 @@ public class PlaybackControlsFragment extends Fragment implements View.OnClickLi
 
         musicName.setText(file.musicName);
         musicArtist.setText(file.musicArtist + " - " + file.musicAlbum);
-        playControl.setImageResource(R.mipmap.ic_music_pause_dark);
+        //playControl.setImageResource(R.mipmap.ic_music_pause_dark);
     }
 
     private void registerListener() {
@@ -113,10 +111,6 @@ public class PlaybackControlsFragment extends Fragment implements View.OnClickLi
             @Override
             public void onClick(View v) {
                 Intent intent = new Intent(mContext, MusicPlayActivity.class);
-                Bundle bundle = new Bundle();
-                bundle.putInt("playIndex", QueueManager.getInstance(null).getCurrentIndex());
-                bundle.putSerializable("playList", (ArrayList<MusicFile>) QueueManager.getInstance(null).getCurrentQueue());
-                intent.putExtras(bundle);
                 startActivity(intent);
             }
         });
@@ -150,14 +144,10 @@ public class PlaybackControlsFragment extends Fragment implements View.OnClickLi
         switch (v.getId()) {
             case R.id.rl_fragment_play_back_root:
                 Intent intent = new Intent(mContext, MusicPlayActivity.class);
-                /*Bundle bundle = new Bundle();
-                bundle.putInt("playIndex", position);
-                bundle.putSerializable("playList", musicFiles);
-                intent.putExtras(bundle);*/
                 startActivity(intent);
                 break;
             case R.id.iv_fragment_play_back_control:
-                switch (localPlayback.getState()) {
+                /*switch (localPlayback.getState()) {
                     case PlaybackState.STATE_PAUSED:
                     case PlaybackState.STATE_BUFFERING:
                         playControl.setImageResource(R.mipmap.ic_music_pause_dark);
@@ -165,8 +155,9 @@ public class PlaybackControlsFragment extends Fragment implements View.OnClickLi
                     case PlaybackState.STATE_PLAYING:
                         playControl.setImageResource(R.mipmap.ic_music_play_dark);
                         break;
-                }
-                EventBus.getDefault().post(new PlaybackEvent(localPlayback.getState()));
+                }*/
+                //EventBus.getDefault().post(new PlaybackEvent(localPlayback.getState()));
+                EventBus.getDefault().post(new ServiceControlEvent(localPlayback.getState()));
                 break;
         }
     }
@@ -193,5 +184,23 @@ public class PlaybackControlsFragment extends Fragment implements View.OnClickLi
     @Subscribe(threadMode = ThreadMode.POSTING)
     public void mediaUpdateEvent(MusicFile file) {
         refreshUI(file);
+    }
+
+    /**
+     * eventbus订阅者-播放状态修改
+     *
+     * @param event
+     */
+    @Subscribe(threadMode = ThreadMode.POSTING)
+    public void playBackEvent(PlaybackEvent event) {
+        switch (event.state) {
+            case PlaybackState.STATE_PAUSED:
+            case PlaybackState.STATE_BUFFERING:
+                playControl.setImageResource(R.mipmap.ic_music_play_dark);
+                break;
+            case PlaybackState.STATE_PLAYING:
+                playControl.setImageResource(R.mipmap.ic_music_pause_dark);
+                break;
+        }
     }
 }

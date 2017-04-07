@@ -20,7 +20,7 @@ import java.io.IOException;
  * <p>
  * Created by xuqiang on 2016/9/30.
  */
-public class LocalPlayback implements IPlayback, AudioManager.OnAudioFocusChangeListener,
+public class  LocalPlayback implements IPlayback, AudioManager.OnAudioFocusChangeListener,
         MediaPlayer.OnCompletionListener, MediaPlayer.OnErrorListener, MediaPlayer.OnPreparedListener, MediaPlayer.OnSeekCompleteListener {
 
     // *****************基本数据类型*******************
@@ -198,9 +198,9 @@ public class LocalPlayback implements IPlayback, AudioManager.OnAudioFocusChange
                 mState = PlaybackStateCompat.STATE_BUFFERING;
             }
             mMediaPlayer.seekTo(position);
-            if (mCallback != null) {
+            /*if (mCallback != null) {
                 mCallback.onPlaybackStatusChanged(mState);
-            }
+            }*/
         }
     }
 
@@ -442,6 +442,9 @@ public class LocalPlayback implements IPlayback, AudioManager.OnAudioFocusChange
         if (mState == PlaybackStateCompat.STATE_BUFFERING) {
             mMediaPlayer.start();
             mState = PlaybackStateCompat.STATE_PLAYING;
+        }
+        if (mCallback != null) {
+            mCallback.onPlaybackStatusChanged(mState);
         }
     }
 
