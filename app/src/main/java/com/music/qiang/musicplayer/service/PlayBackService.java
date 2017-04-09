@@ -130,6 +130,7 @@ public class PlayBackService extends Service {
         Bundle bundleObject = intent.getExtras();
         from = bundleObject.getString("from");
         currentMode = bundleObject.getInt("currentMode");
+        // 如果是从列表页启动service时，获取播放列表和最开始播放的media
         if (!StringUtils.isNullOrEmpty(from) && "list".equals(from)) {
             playList = (ArrayList<MusicFile>) bundleObject.getSerializable("playList");
             currentIndex = bundleObject.getInt("playIndex");
@@ -144,14 +145,13 @@ public class PlayBackService extends Service {
             if (0 == currentMode) {
                 queueManager.setCurrentQueue(playList, String.valueOf(musicId));
             } else if (1 == currentMode) {
-
+                queueManager.setSingleCycleQueue(playList, String.valueOf(musicId));
             } else if (2 == currentMode) {
                 queueManager.setRandomQueue(playList, String.valueOf(musicId));
             }
         } else {
             queueManager = QueueManager.getInstance(null);
         }
-
 
         LocalPlayback playback = LocalPlayback.getInstance();
         // 创建播放类管理者
@@ -212,7 +212,7 @@ public class PlayBackService extends Service {
                 playBackManager.handlePre();
                 break;
             case 1:
-                playBackManager.handleNext();
+                playBackManager.handleNext(true);
                 break;
         }
     }
@@ -245,11 +245,11 @@ public class PlayBackService extends Service {
         switch (event.mode) {
             // 列表循环
             case 0:
-                queueManager.setCurrentQueue(null);
+                queueManager.setCurrentQueue(null, null);
                 break;
             // 单曲循环
             case 1:
-                playBackManager.handleNext();
+                queueManager.setSingleCycleQueue(null, null);
                 break;
             // 随机播放
             case 2:

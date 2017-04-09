@@ -65,9 +65,13 @@ public class PlayBackManager implements IPlayback.Callback {
 
     /**
      * 切到下一首
+     * @param skip 主要区别于单曲循环播放时区分，当单曲循环时用户点击了“下一首”按钮可以播放队列中的下一首
+     *             当单曲循环中播放完当前歌曲自动播放下一首时，不能切到播放队列的下一首
+     *             true: 可以切到下一首
+     *             false: 不能切到下一首
      */
-    public void handleNext() {
-        if (queueManager.moveToNext()) {
+    public void handleNext(boolean skip) {
+        if (queueManager.moveToNext(skip)) {
             MusicFile file = queueManager.getCurrentMusic();
             if (file != null) {
                 iPlayback.play(file.musicId);
@@ -93,7 +97,7 @@ public class PlayBackManager implements IPlayback.Callback {
      */
     @Override
     public void onCompletion() {
-        handleNext();
+        handleNext(false);
     }
 
     /**
