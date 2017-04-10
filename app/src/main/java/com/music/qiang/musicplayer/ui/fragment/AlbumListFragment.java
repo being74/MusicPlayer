@@ -3,14 +3,12 @@ package com.music.qiang.musicplayer.ui.fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,10 +16,8 @@ import android.widget.LinearLayout;
 
 import com.music.qiang.musicplayer.R;
 import com.music.qiang.musicplayer.model.AlbumFile;
-import com.music.qiang.musicplayer.model.MusicFile;
-import com.music.qiang.musicplayer.ui.activity.MusicPlayActivity;
+import com.music.qiang.musicplayer.ui.activity.AlbumDetailActivity;
 import com.music.qiang.musicplayer.ui.adapter.AlbumListAdapter;
-import com.music.qiang.musicplayer.ui.adapter.MusicListAdapter;
 
 import java.util.ArrayList;
 
@@ -97,13 +93,9 @@ public class AlbumListFragment extends Fragment {
         albumListAdapter.setOnItemClickListener(new AlbumListAdapter.MyItemClickListener() {
             @Override
             public void onItemClickListener(View view, int position) {
-                /*Intent intent = new Intent(mContext, MusicPlayActivity.class);
-                Bundle bundle = new Bundle();
-                bundle.putString("from", "list");
-                bundle.putInt("playIndex", position);
-                bundle.putSerializable("playList", albumFiles);
-                intent.putExtras(bundle);
-                startActivity(intent);*/
+                Intent intent = new Intent(mContext, AlbumDetailActivity.class);
+                intent.putExtra("albumName", albumFiles.get(position).albumName);
+                startActivity(intent);
             }
 
             @Override

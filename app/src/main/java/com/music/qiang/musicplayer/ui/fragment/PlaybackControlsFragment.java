@@ -201,6 +201,9 @@ public class PlaybackControlsFragment extends Fragment implements View.OnClickLi
             case PlaybackState.STATE_PLAYING:
                 playControl.setImageResource(R.mipmap.ic_music_pause_dark);
                 break;
+            case PlaybackState.STATE_STOPPED:
+                playControl.setImageResource(R.mipmap.ic_music_play_dark);
+                break;
         }
     }
 }

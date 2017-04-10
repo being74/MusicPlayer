@@ -9,15 +9,13 @@ import android.support.v4.view.ViewPager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import com.music.qiang.musicplayer.ui.fragment.AlbumListFragment;
-import com.music.qiang.musicplayer.ui.fragment.ItemFragment;
+import com.music.qiang.musicplayer.ui.fragment.ArtistListFragment;
 import com.music.qiang.musicplayer.ui.fragment.MoreFragment;
 import com.music.qiang.musicplayer.ui.fragment.MusicListFragment;
-import com.music.qiang.musicplayer.ui.fragment.dummy.DummyContent;
 
-public class MainActivity extends AppCompatActivity implements ItemFragment.OnListFragmentInteractionListener {
+public class MainActivity extends AppCompatActivity {
 
     // ****************Views*******************
     private Toolbar toolbar;
@@ -124,13 +122,13 @@ public class MainActivity extends AppCompatActivity implements ItemFragment.OnLi
                     fragment = new AlbumListFragment();
                     break;
                 case 2:
-                    fragment = new ItemFragment();
+                    fragment = new ArtistListFragment();
                     break;
                 case 3:
                     fragment = new MoreFragment();
                     break;
                 default:
-                    fragment = new ItemFragment();
+                    fragment = new ArtistListFragment();
                     break;
             }
             return fragment;
@@ -138,8 +136,4 @@ public class MainActivity extends AppCompatActivity implements ItemFragment.OnLi
 
     }
 
-    @Override
-    public void onListFragmentInteraction(DummyContent.DummyItem item) {
-        Toast.makeText(this, "hello", Toast.LENGTH_SHORT).show();
-    }
 }

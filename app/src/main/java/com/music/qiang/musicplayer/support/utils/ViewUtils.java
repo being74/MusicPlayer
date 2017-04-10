@@ -22,6 +22,9 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import com.music.qiang.musicplayer.application.MyApp;
 
 /**
  * Created by qiang on 2016/06/24.
@@ -367,5 +370,35 @@ public class ViewUtils {
         }
         layoutParams.width = width;
         view.setLayoutParams(layoutParams);
+    }
+
+    /**
+     * toast 时间（默认 时间Toast.LENGTH_LONG）
+     *
+     * @param c
+     * @param msg
+     *            内容
+     * @param show
+     *            是否显示
+     */
+    public static void toast(Context c, String msg, boolean show) {
+        toast(c, msg, show, Toast.LENGTH_LONG);
+    }
+
+    /**
+     * toast
+     *
+     * @param c
+     * @param msg
+     *            内容
+     * @param show
+     *            是否显示
+     * @param duration
+     *            时间
+     */
+    public static void toast(Context c, String msg, boolean show, int duration) {
+        if (!show)
+            return;
+        MyApp.toastMgr.builder.display(msg, duration);
     }
 }

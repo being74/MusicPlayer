@@ -27,6 +27,7 @@ import com.music.qiang.musicplayer.playback.LocalPlayback;
 import com.music.qiang.musicplayer.service.PlayBackService;
 import com.music.qiang.musicplayer.support.utils.BlurUtil;
 import com.music.qiang.musicplayer.support.utils.StringUtils;
+import com.music.qiang.musicplayer.support.utils.ViewUtils;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -296,12 +297,15 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
                 if (currentMode == 0) {
                     currentMode = 1;
                     playQueueTypeIcon.setImageResource(R.mipmap.ic_music_play_repeat_one);
+                    ViewUtils.toast(this, "单曲循环", true);
                 } else if (currentMode == 1) {
                     currentMode = 2;
                     playQueueTypeIcon.setImageResource(R.mipmap.ic_music_play_random);
+                    ViewUtils.toast(this, "随机播放", true);
                 } else if (currentMode == 2) {
                     currentMode = 0;
                     playQueueTypeIcon.setImageResource(R.mipmap.ic_music_play_repeat);
+                    ViewUtils.toast(this, "列表循环", true);
                 }
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putInt("playMode", currentMode);
@@ -336,6 +340,9 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
                 break;
             case PlaybackState.STATE_PLAYING:
                 playButton.setImageResource(R.mipmap.ic_music_pause);
+                break;
+            case PlaybackState.STATE_STOPPED:
+                playButton.setImageResource(R.mipmap.ic_music_play);
                 break;
         }
     }

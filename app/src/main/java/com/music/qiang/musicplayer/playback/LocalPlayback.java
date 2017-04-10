@@ -211,6 +211,9 @@ public class LocalPlayback implements IPlayback, AudioManager.OnAudioFocusChange
         mState = PlaybackStateCompat.STATE_STOPPED;
         mCurrentPosition = getCurrentStreamPosition();
         relaxResources(true);
+        if (mCallback != null) {
+            mCallback.onPlaybackStatusChanged(mState);
+        }
     }
 
     @Override

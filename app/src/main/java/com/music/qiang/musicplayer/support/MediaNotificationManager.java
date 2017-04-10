@@ -45,7 +45,7 @@ public class MediaNotificationManager extends BroadcastReceiver {
 
     private PlayBackService mPlayBackService;
 
-    private RemoteViews mRemoteViews;
+    private RemoteViews mRemoteViews, mRemoteViewsSmall;
     private final NotificationManagerCompat mNotificationManager;
     private NotificationCompat.Builder builder;
     private Intent resultIntent;
@@ -90,13 +90,14 @@ public class MediaNotificationManager extends BroadcastReceiver {
                 EventBus.getDefault().post(new QueueSkipEvent(1));
                 break;
             case ACTION_STOP_CASTING:
-                stopNotification();
+                mPlayBackService.stopPlay();
                 break;
         }
     }
 
     public void showNotification() {
         if (!mStarted) {
+            // 通知大视图初始化
             mRemoteViews = new RemoteViews(mPlayBackService.getPackageName(), R.layout.notifi_play_back);
             mRemoteViews.setImageViewResource(R.id.iv_notifi_play_back_thumb, R.mipmap.ic_black_rubber);
             mRemoteViews.setTextViewText(R.id.tv_notifi_play_back_name, "忽然");
@@ -104,6 +105,15 @@ public class MediaNotificationManager extends BroadcastReceiver {
             mRemoteViews.setOnClickPendingIntent(R.id.iv_notifi_play_back_play, mPlayIntent);
             mRemoteViews.setOnClickPendingIntent(R.id.iv_notifi_play_back_pre, mPreviousIntent);
             mRemoteViews.setOnClickPendingIntent(R.id.iv_notifi_play_back_next, mNextIntent);
+            mRemoteViews.setOnClickPendingIntent(R.id.iv_notifi_play_back_close, mStopCastIntent);
+            // 通知小视图初始化
+            mRemoteViewsSmall = new RemoteViews(mPlayBackService.getPackageName(), R.layout.notifi_play_back_small);
+            mRemoteViewsSmall.setImageViewResource(R.id.iv_notifi_play_back_small_thumb, R.mipmap.ic_black_rubber);
+            mRemoteViewsSmall.setTextViewText(R.id.tv_notifi_play_back_small_name, "忽然");
+            mRemoteViewsSmall.setTextViewText(R.id.tv_notifi_play_back_small_artist, "李志");
+            mRemoteViewsSmall.setOnClickPendingIntent(R.id.iv_notifi_play_back_small_play, mPlayIntent);
+            mRemoteViewsSmall.setOnClickPendingIntent(R.id.iv_notifi_play_back_small_next, mNextIntent);
+            mRemoteViewsSmall.setOnClickPendingIntent(R.id.iv_notifi_play_back_small_close, mStopCastIntent);
 
             builder = new NotificationCompat.Builder(mPlayBackService);
             builder.setTicker("开始播放音乐");// 收到通知的时候用于显示于屏幕顶部通知栏的内容
@@ -121,9 +131,10 @@ public class MediaNotificationManager extends BroadcastReceiver {
             resultIntent.setPackage(mPlayBackService.getPackageName());
             PendingIntent pendingIntent = PendingIntent.getActivity(mPlayBackService, REQUEST_CODE, resultIntent, PendingIntent.FLAG_CANCEL_CURRENT);
             builder.setContentIntent(pendingIntent);
+
             Notification notification = builder.build();
-            notification.contentView = mRemoteViews;
             notification.bigContentView = mRemoteViews;
+            notification.contentView = mRemoteViewsSmall;
             notification.flags = Notification.FLAG_AUTO_CANCEL;
 
             mNotificationManager.notify(NOTIFICATION_ID, notification);
@@ -161,28 +172,39 @@ public class MediaNotificationManager extends BroadcastReceiver {
      * @param file
      */
     public void refreshUI(MusicFile file) {
+        if (!mStarted) {
+            showNotification();
+        }
         if (file != null) {
+            // 给大尺寸通知赋值
             mRemoteViews.setImageViewUri(R.id.iv_notifi_play_back_thumb, ContentUris.withAppendedId(sArtworkUri, file.musicAlubmId));
             mRemoteViews.setTextViewText(R.id.tv_notifi_play_back_name, file.musicName);
             mRemoteViews.setTextViewText(R.id.tv_notifi_play_back_artist, file.musicArtist);
+            // 给小尺寸通知赋值
+            mRemoteViewsSmall.setImageViewUri(R.id.iv_notifi_play_back_small_thumb, ContentUris.withAppendedId(sArtworkUri, file.musicAlubmId));
+            mRemoteViewsSmall.setTextViewText(R.id.tv_notifi_play_back_small_name, file.musicName);
+            mRemoteViewsSmall.setTextViewText(R.id.tv_notifi_play_back_small_artist, file.musicArtist);
         }
 
         LocalPlayback localPlayback = LocalPlayback.getInstance();
         switch (localPlayback.getState()) {
             case PlaybackState.STATE_PAUSED:
                 mRemoteViews.setImageViewResource(R.id.iv_notifi_play_back_play, R.mipmap.ic_music_play);
+                mRemoteViewsSmall.setImageViewResource(R.id.iv_notifi_play_back_small_play, R.mipmap.ic_music_play);
                 break;
             case PlaybackState.STATE_BUFFERING:
                 mRemoteViews.setImageViewResource(R.id.iv_notifi_play_back_play, R.mipmap.ic_music_play);
+                mRemoteViewsSmall.setImageViewResource(R.id.iv_notifi_play_back_small_play, R.mipmap.ic_music_play);
                 break;
             case PlaybackState.STATE_PLAYING:
                 mRemoteViews.setImageViewResource(R.id.iv_notifi_play_back_play, R.mipmap.ic_music_pause);
+                mRemoteViewsSmall.setImageViewResource(R.id.iv_notifi_play_back_small_play, R.mipmap.ic_music_pause);
                 break;
         }
 
         Notification notification = builder.build();
-        notification.contentView = mRemoteViews;
         notification.bigContentView = mRemoteViews;
+        notification.contentView = mRemoteViewsSmall;
         notification.flags = Notification.FLAG_AUTO_CANCEL;
 
         mNotificationManager.notify(NOTIFICATION_ID, notification);

@@ -3,7 +3,6 @@ package com.music.qiang.musicplayer.service;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.media.MediaPlayer;
 import android.media.session.PlaybackState;
 import android.os.Bundle;
 import android.os.Handler;
@@ -44,7 +43,6 @@ public class PlayBackService extends Service {
     private MediaNotificationManager mediaNotificationManager;
     private Looper mServiceLooper;
     private ServiceHandler mServiceHandler;
-    private MediaPlayer mediaPlayer;
     private ArrayList<MusicFile> playList;
 
     //*****************基本数据类型****************
@@ -171,8 +169,15 @@ public class PlayBackService extends Service {
     public void onDestroy() {
         super.onDestroy();
         EventBus.getDefault().unregister(this);
-        mediaPlayer.release();
-        mediaPlayer = null;
+        playBackManager.handleStop();
+        mediaNotificationManager.stopNotification();
+    }
+
+    /**
+     * 停止播放当前
+     */
+    public void stopPlay() {
+        playBackManager.handleStop();
         mediaNotificationManager.stopNotification();
     }
 
@@ -186,6 +191,9 @@ public class PlayBackService extends Service {
                 break;
             case PlaybackState.STATE_PLAYING:
                 playBackManager.handlePause();
+                break;
+            case PlaybackState.STATE_STOPPED:
+                playBackManager.handlePlay();
                 break;
         }
     }
