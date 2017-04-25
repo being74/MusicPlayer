@@ -1,5 +1,8 @@
 package com.music.qiang.musicplayer.ui.activity;
 
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
+import android.annotation.SuppressLint;
 import android.content.ContentUris;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -12,6 +15,8 @@ import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.view.animation.LinearInterpolator;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
@@ -28,6 +33,7 @@ import com.music.qiang.musicplayer.service.PlayBackService;
 import com.music.qiang.musicplayer.support.utils.BlurUtil;
 import com.music.qiang.musicplayer.support.utils.StringUtils;
 import com.music.qiang.musicplayer.support.utils.ViewUtils;
+import com.music.qiang.musicplayer.ui.view.RoundImageView;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -48,8 +54,11 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
      * 开始/暂停 按钮
      */
     private ImageView playButton, playPre, playNext, backgroundImage, playQueueTypeIcon, playQueueIcon;
-    private TextView musicName, musicArtist, musicPlayTime, musicPlayAlltime;
+    private TextView musicPlayTime, musicPlayAlltime;
     private SeekBar seekBar;
+    private RoundImageView roundImageView;
+    private Toolbar toolbar;
+    private FrameLayout rubberLayout;
 
     //***************基本数据***************
     /**
@@ -63,9 +72,14 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
     private String from;
     private ArrayList<MusicFile> playList;
     private int playIndex;
+    /**
+     * 当前旋转动画的值
+     */
+    private float currentRotationValue;
 
     //***************对象***************
     private SharedPreferences sharedPreferences;
+    private ObjectAnimator rubberRotation;
     /**
      * 播放业务处理类
      */
@@ -104,6 +118,10 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
         }
         intent.putExtras(bundle);
         startService(intent);
+        // 如果进入页面时正在播放，开始旋转动画
+        if (localPlayback.getState() == PlaybackState.STATE_PLAYING && rubberRotation == null) {
+            startAnimation();
+        }
     }
 
     @Override
@@ -131,7 +149,7 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
     }
 
     private void initViews() {
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
@@ -143,14 +161,14 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
             }
         });
 
+        rubberLayout = (FrameLayout) findViewById(R.id.fl_activity_music_play_rubber);
+        roundImageView = (RoundImageView) findViewById(R.id.riv_activity_music_play);
         backgroundImage = (ImageView) findViewById(R.id.background_image);
         playButton = (ImageView) findViewById(R.id.ib_fragment_music_play);
         playPre = (ImageView) findViewById(R.id.ib_fragment_music_play_pre);
         playNext = (ImageView) findViewById(R.id.ib_fragment_music_play_next);
         playQueueTypeIcon = (ImageView) findViewById(R.id.iv_activity_music_play_type);
         playQueueIcon = (ImageView) findViewById(R.id.iv_activity_music_play_more);
-        musicName = (TextView) findViewById(R.id.tv_fragment_music_play_name);
-        musicArtist = (TextView) findViewById(R.id.tv_fragment_music_play_artist);
         seekBar = (SeekBar) findViewById(R.id.sb_activity_music_play);
         musicPlayTime = (TextView) findViewById(R.id.tv_activity_music_play_time);
         musicPlayAlltime = (TextView) findViewById(R.id.tv_activity_music_play_all_time);
@@ -159,17 +177,18 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
     private void initData() {
         // 设置数字格式，如01
         df.setMinimumIntegerDigits(2);
+        localPlayback = LocalPlayback.getInstance();
         sharedPreferences = getSharedPreferences("playback", MODE_PRIVATE);
         currentMode = sharedPreferences.getInt("playMode", 0);
         switch (currentMode) {
             case 0:
-                playQueueTypeIcon.setImageResource(R.mipmap.ic_music_play_repeat);
+                playQueueTypeIcon.setImageResource(R.mipmap.ic_music_play_repeat_dark);
                 break;
             case 1:
-                playQueueTypeIcon.setImageResource(R.mipmap.ic_music_play_repeat_one);
+                playQueueTypeIcon.setImageResource(R.mipmap.ic_music_play_repeat_one_dark);
                 break;
             case 2:
-                playQueueTypeIcon.setImageResource(R.mipmap.ic_music_play_random);
+                playQueueTypeIcon.setImageResource(R.mipmap.ic_music_play_random_dark);
                 break;
         }
     }
@@ -235,13 +254,12 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
         /*Picasso.with(this)
                 .load(ContentUris.withAppendedId(sArtworkUri, playList.get(playIndex).musicAlubmId))
                 .error(R.mipmap.ic_black_rubber)
-                .into(background_image);*/
-        localPlayback = LocalPlayback.getInstance();
+                .into(roundPaddingImageView);*/
+        //localPlayback = LocalPlayback.getInstance();
         setBlurBackground(file);
 
-        setTitle(file.musicName);
-        musicName.setText(file.musicName);
-        musicArtist.setText(file.musicArtist + " - " + file.musicAlbum);
+        toolbar.setTitle(file.musicName);
+        toolbar.setSubtitle(file.musicArtist);
 
         if (StringUtils.canParseInt(file.musicTime)) {
             // 音乐时长，单位毫秒
@@ -254,7 +272,6 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
             String second = df.format((musicTime / 1000) % 60);
             musicPlayAlltime.setText(minute + ":" + second);
         }
-
     }
 
     /**
@@ -268,10 +285,49 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
             //final Bitmap blurBmp = FastBlurUtil.doBlur(bitmap, 8, false);//0-25，表示模糊值
             //final Drawable newBitmapDrawable = new BitmapDrawable(blurBmp); // 将Bitmap转换为Drawable
             backgroundImage.setImageBitmap(blurBmp);
+            roundImageView.setImageBitmap(bitmap);
         } catch (IOException e) {
             e.printStackTrace();
             backgroundImage.setImageResource(R.drawable.fullscreen_toolbar_bg_gradient);
+            roundImageView.setImageResource(R.mipmap.ic_black_rubber);
         }
+    }
+
+    /**
+     * 开始动画
+     * */
+    @SuppressLint("NewApi")
+    public void startAnimation() {
+        // 设置动画，从上次停止位置开始,这里是顺时针旋转360度
+        rubberRotation = ObjectAnimator.ofFloat(rubberLayout, "Rotation",
+                currentRotationValue - 360, currentRotationValue);
+        // 设置持续时间
+        rubberRotation.setDuration(40000);
+        // 设置循环播放
+        rubberRotation.setRepeatCount(ObjectAnimator.INFINITE);
+        rubberRotation.setInterpolator(new LinearInterpolator());
+        // 设置动画监听
+        rubberRotation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+
+            @Override
+            public void onAnimationUpdate(ValueAnimator animation) {
+                // 监听动画执行的位置，以便下次开始时，从当前位置开始
+                currentRotationValue = (Float) animation.getAnimatedValue();
+
+            }
+        });
+        rubberRotation.start();
+    }
+
+    /**
+     * 暂停动画
+     * */
+    @SuppressLint("NewApi")
+    public void pauseAnimation() {
+        if (rubberRotation != null) {
+            rubberRotation.cancel();
+        }
+        rubberLayout.clearAnimation();// 清除此View身上的动画
     }
 
     @Override
@@ -296,15 +352,15 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
             case R.id.iv_activity_music_play_type:
                 if (currentMode == 0) {
                     currentMode = 1;
-                    playQueueTypeIcon.setImageResource(R.mipmap.ic_music_play_repeat_one);
+                    playQueueTypeIcon.setImageResource(R.mipmap.ic_music_play_repeat_one_dark);
                     ViewUtils.toast(this, "单曲循环", true);
                 } else if (currentMode == 1) {
                     currentMode = 2;
-                    playQueueTypeIcon.setImageResource(R.mipmap.ic_music_play_random);
+                    playQueueTypeIcon.setImageResource(R.mipmap.ic_music_play_random_dark);
                     ViewUtils.toast(this, "随机播放", true);
                 } else if (currentMode == 2) {
                     currentMode = 0;
-                    playQueueTypeIcon.setImageResource(R.mipmap.ic_music_play_repeat);
+                    playQueueTypeIcon.setImageResource(R.mipmap.ic_music_play_repeat_dark);
                     ViewUtils.toast(this, "列表循环", true);
                 }
                 SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -336,14 +392,15 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
         switch (event.state) {
             case PlaybackState.STATE_PAUSED:
             case PlaybackState.STATE_BUFFERING:
-                playButton.setImageResource(R.mipmap.ic_music_play);
+            case PlaybackState.STATE_STOPPED:
+                playButton.setImageResource(R.mipmap.ic_music_play_dark);
+                pauseAnimation();
                 break;
             case PlaybackState.STATE_PLAYING:
-                playButton.setImageResource(R.mipmap.ic_music_pause);
+                playButton.setImageResource(R.mipmap.ic_music_pause_dark);
+                startAnimation();
                 break;
-            case PlaybackState.STATE_STOPPED:
-                playButton.setImageResource(R.mipmap.ic_music_play);
-                break;
+
         }
     }
 
