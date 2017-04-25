@@ -30,7 +30,6 @@ import com.music.qiang.musicplayer.events.ServiceControlEvent;
 import com.music.qiang.musicplayer.model.MusicFile;
 import com.music.qiang.musicplayer.playback.LocalPlayback;
 import com.music.qiang.musicplayer.service.PlayBackService;
-import com.music.qiang.musicplayer.support.utils.BlurUtil;
 import com.music.qiang.musicplayer.support.utils.StringUtils;
 import com.music.qiang.musicplayer.support.utils.ViewUtils;
 import com.music.qiang.musicplayer.ui.view.RoundImageView;
@@ -53,7 +52,7 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
     /**
      * 开始/暂停 按钮
      */
-    private ImageView playButton, playPre, playNext, backgroundImage, playQueueTypeIcon, playQueueIcon;
+    private ImageView playButton, playPre, playNext, playQueueTypeIcon, playQueueIcon;
     private TextView musicPlayTime, musicPlayAlltime;
     private SeekBar seekBar;
     private RoundImageView roundImageView;
@@ -134,6 +133,7 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
         super.onDestroy();
         EventBus.getDefault().unregister(this);
         stopSeekbarUpdate();
+        startAnimation();
         mExecutorService.shutdown();
     }
 
@@ -163,7 +163,6 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
 
         rubberLayout = (FrameLayout) findViewById(R.id.fl_activity_music_play_rubber);
         roundImageView = (RoundImageView) findViewById(R.id.riv_activity_music_play);
-        backgroundImage = (ImageView) findViewById(R.id.background_image);
         playButton = (ImageView) findViewById(R.id.ib_fragment_music_play);
         playPre = (ImageView) findViewById(R.id.ib_fragment_music_play_pre);
         playNext = (ImageView) findViewById(R.id.ib_fragment_music_play_next);
@@ -281,15 +280,13 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
     private void setBlurBackground(MusicFile file) {
         try {
             Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), ContentUris.withAppendedId(sArtworkUri, file.musicAlubmId));
-            final Bitmap blurBmp = BlurUtil.fastblur(this, bitmap, 25);//0-25，表示模糊值
+            //final Bitmap blurBmp = BlurUtil.fastblur(this, bitmap, 25);//0-25，表示模糊值
             //final Bitmap blurBmp = FastBlurUtil.doBlur(bitmap, 8, false);//0-25，表示模糊值
             //final Drawable newBitmapDrawable = new BitmapDrawable(blurBmp); // 将Bitmap转换为Drawable
-            backgroundImage.setImageBitmap(blurBmp);
             roundImageView.setImageBitmap(bitmap);
         } catch (IOException e) {
             e.printStackTrace();
-            backgroundImage.setImageResource(R.drawable.fullscreen_toolbar_bg_gradient);
-            roundImageView.setImageResource(R.mipmap.ic_black_rubber);
+            roundImageView.setVisibility(View.GONE);
         }
     }
 
@@ -328,6 +325,12 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
             rubberRotation.cancel();
         }
         rubberLayout.clearAnimation();// 清除此View身上的动画
+    }
+
+    private void stopAnimation() {
+        if (rubberRotation != null) {
+            rubberRotation.cancel();
+        }
     }
 
     @Override
