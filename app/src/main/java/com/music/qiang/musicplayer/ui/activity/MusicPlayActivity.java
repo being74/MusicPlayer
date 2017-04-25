@@ -133,7 +133,7 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
         super.onDestroy();
         EventBus.getDefault().unregister(this);
         stopSeekbarUpdate();
-        startAnimation();
+        stopAnimation();
         mExecutorService.shutdown();
     }
 
