@@ -53,6 +53,10 @@ public class PlayBackService extends Service {
     private int currentMode = 0;
     private String musicId;
     private String from;
+    /**
+     * 播放类型，分为"online"和”local“
+     */
+    private String playType = "local";
 
     private final class ServiceHandler extends Handler {
         public ServiceHandler(Looper looper) {
@@ -127,6 +131,7 @@ public class PlayBackService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Bundle bundleObject = intent.getExtras();
         from = bundleObject.getString("from");
+        playType = bundleObject.getString("playType");
         currentMode = bundleObject.getInt("currentMode");
         // 如果是从列表页启动service时，获取播放列表和最开始播放的media
         if (!StringUtils.isNullOrEmpty(from) && "list".equals(from)) {
@@ -154,6 +159,7 @@ public class PlayBackService extends Service {
         LocalPlayback playback = LocalPlayback.getInstance();
         // 创建播放类管理者
         playBackManager = new PlayBackManager(queueManager, playback);
+        playBackManager.setPlayType(playType);
         playBackManager.handlePlay();
 
         return START_STICKY;

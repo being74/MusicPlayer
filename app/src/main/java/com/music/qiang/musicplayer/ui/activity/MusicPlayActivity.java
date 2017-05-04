@@ -33,6 +33,7 @@ import com.music.qiang.musicplayer.service.PlayBackService;
 import com.music.qiang.musicplayer.support.utils.StringUtils;
 import com.music.qiang.musicplayer.support.utils.ViewUtils;
 import com.music.qiang.musicplayer.ui.view.RoundImageView;
+import com.squareup.picasso.Picasso;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -69,6 +70,10 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
      * 只有从播放列表过来的才重新获取播放列表
      */
     private String from;
+    /**
+     * 播放类型，分为"online"和”local“
+     */
+    private String playType = "local";
     private ArrayList<MusicFile> playList;
     private int playIndex;
     /**
@@ -111,6 +116,7 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
         Bundle bundle = new Bundle();
         bundle.putInt("currentMode", currentMode);
         bundle.putString("from", from);
+        bundle.putString("playType", playType);
         if (playList != null) {
             bundle.putSerializable("playList", playList);
             bundle.putInt("playIndex", playIndex);
@@ -141,6 +147,7 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
         Bundle bundleObject = getIntent().getExtras();
         if (bundleObject != null) {
             from = bundleObject.getString("from");
+            playType = bundleObject.getString("playType");
             if (from != null && "list".equals(from)) {
                 playList = (ArrayList<MusicFile>) bundleObject.getSerializable("playList");
                 playIndex = bundleObject.getInt("playIndex");
@@ -279,11 +286,24 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
     @SuppressWarnings("deprecation")
     private void setBlurBackground(MusicFile file) {
         try {
-            Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), ContentUris.withAppendedId(sArtworkUri, file.musicAlubmId));
-            //final Bitmap blurBmp = BlurUtil.fastblur(this, bitmap, 25);//0-25，表示模糊值
-            //final Bitmap blurBmp = FastBlurUtil.doBlur(bitmap, 8, false);//0-25，表示模糊值
-            //final Drawable newBitmapDrawable = new BitmapDrawable(blurBmp); // 将Bitmap转换为Drawable
-            roundImageView.setImageBitmap(bitmap);
+            if (!StringUtils.isNullOrEmpty(playType) && "online".equals(playType)) {
+                if (!StringUtils.isNullOrEmpty(file.albumpic_big)) {
+                    Picasso.with(this)
+                            .load(file.albumpic_big)
+                            .into(roundImageView);
+                } else {
+                    Picasso.with(this)
+                            .load(file.albumpic_small)
+                            .into(roundImageView);
+                }
+            } else {
+                Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), ContentUris.withAppendedId(sArtworkUri, file.musicAlubmId));
+                //final Bitmap blurBmp = BlurUtil.fastblur(this, bitmap, 25);//0-25，表示模糊值
+                //final Bitmap blurBmp = FastBlurUtil.doBlur(bitmap, 8, false);//0-25，表示模糊值
+                //final Drawable newBitmapDrawable = new BitmapDrawable(blurBmp); // 将Bitmap转换为Drawable
+                roundImageView.setImageBitmap(bitmap);
+            }
+
         } catch (IOException e) {
             e.printStackTrace();
             roundImageView.setVisibility(View.GONE);
