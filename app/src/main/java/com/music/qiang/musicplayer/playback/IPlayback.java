@@ -2,6 +2,8 @@ package com.music.qiang.musicplayer.playback;
 
 import android.media.session.PlaybackState;
 
+import com.music.qiang.musicplayer.model.MusicFile;
+
 /**
  * 播放类主接口
  * <p>
@@ -67,6 +69,11 @@ public interface IPlayback {
      */
     void play(String id);
 
+    /**
+     * 播放在线音频
+     * @param file
+     */
+    void playOnline(MusicFile file);
     /**
      * 暂停
      */

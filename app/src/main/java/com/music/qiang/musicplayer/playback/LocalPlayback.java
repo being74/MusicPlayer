@@ -11,6 +11,7 @@ import android.support.v4.media.session.PlaybackStateCompat;
 import android.text.TextUtils;
 
 import com.music.qiang.musicplayer.application.MyApp;
+import com.music.qiang.musicplayer.model.MusicFile;
 import com.music.qiang.musicplayer.support.utils.LogHelper;
 
 import java.io.IOException;
@@ -130,6 +131,44 @@ public class LocalPlayback implements IPlayback, AudioManager.OnAudioFocusChange
     @Override
     public void start() {
 
+    }
+
+    @Override
+    public void playOnline(MusicFile file) {
+        mPlayOnFocusGain = true;
+        tryToGetAudioFocus();
+        boolean mediaHasChanged = !TextUtils.equals(file.musicId, mCurrentMediaId);
+        if (mediaHasChanged) {
+            mCurrentPosition = 0;
+            mCurrentMediaId = file.musicId;
+        }
+        if (mState == PlaybackStateCompat.STATE_PLAYING && !mediaHasChanged && mMediaPlayer != null) {
+            // 当前歌曲正在播放，不做任何处理
+            return;
+        }
+        if (mState == PlaybackStateCompat.STATE_PAUSED && !mediaHasChanged && mMediaPlayer != null) {
+            configMediaPlayerState();
+        } else {
+            try {
+                createMediaPlayerIfNeeded();
+                mState = PlaybackStateCompat.STATE_BUFFERING;
+                mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                mMediaPlayer.setDataSource(file.musicPath);
+
+                mMediaPlayer.prepareAsync();
+                mWifiLock.acquire();
+
+                if (mCallback != null) {
+                    mCallback.onPlaybackStatusChanged(mState);
+                }
+
+            } catch (IOException ex) {
+                LogHelper.e(TAG, ex, "Exception playing song");
+                if (mCallback != null) {
+                    mCallback.onError(ex.getMessage());
+                }
+            }
+        }
     }
 
     @Override
