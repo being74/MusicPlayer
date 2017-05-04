@@ -1,31 +1,27 @@
 package com.music.qiang.musicplayer.ui.activity;
 
-import android.content.ComponentName;
 import android.os.Bundle;
-import android.os.RemoteException;
 import android.support.v4.media.MediaBrowserCompat;
 import android.support.v4.media.session.MediaControllerCompat;
-import android.support.v4.media.session.MediaSessionCompat;
 import android.support.v4.media.session.PlaybackStateCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.view.View;
 
-import com.music.qiang.musicplayer.service.PlayMusicService;
-import com.music.qiang.musicplayer.support.utils.LogHelper;
 import com.music.qiang.musicplayer.ui.fragment.PlaybackControlsFragment;
+import com.music.qiang.musicplayer.ui.view.BaseLayout;
 
 public class BaseActivity extends AppCompatActivity {
 
-    private static final String TAG = LogHelper.makeLogTag(BaseActivity.class);
     private MediaBrowserCompat mMediaBrowser;
     private PlaybackControlsFragment mControlsFragment;
+    private BaseLayout baseLayout;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // setContentView(R.layout.activity_base);
 
-        mMediaBrowser = new MediaBrowserCompat(this,
-                new ComponentName(this, PlayMusicService.class), mConnectionCallback, null);
     }
 
     @Override
@@ -34,15 +30,34 @@ public class BaseActivity extends AppCompatActivity {
         //mControlsFragment = getFragmentManager().findFragmentById(R.id.f)
     }
 
+    protected void setView(int layoutResId, int type) {
+        baseLayout = new BaseLayout(this, layoutResId, type);
+        setContentView(baseLayout);
+        initToolbar();
+    }
+
+    /**
+     * 初始化toolbar
+     */
+    private void initToolbar() {
+        setSupportActionBar(baseLayout.toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        baseLayout.toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
+    }
+
     protected void hidePlaybackControls() {
-        LogHelper.d(TAG, "hidePlaybackControls");
         /*getFragmentManager().beginTransaction()
                 .hide(mControlsFragment)
                 .commit();*/
     }
 
     protected void showPlaybackControls() {
-        LogHelper.d(TAG, "showPlaybackControls");
         /*if (NetworkHelper.isOnline(this)) {
             getFragmentManager().beginTransaction()
                     .setCustomAnimations(
@@ -75,39 +90,4 @@ public class BaseActivity extends AppCompatActivity {
                 return true;
         }
     }
-
-    private void connectToSession(MediaSessionCompat.Token token) throws RemoteException {
-        MediaControllerCompat mediaController = new MediaControllerCompat(this, token);
-        setSupportMediaController(mediaController);
-        /*mediaController.registerCallback(mMediaControllerCallback);
-
-        if (shouldShowControls()) {
-            showPlaybackControls();
-        } else {
-            LogHelper.d(TAG, "connectionCallback.onConnected: " +
-                    "hiding controls because metadata is null");
-            hidePlaybackControls();
-        }
-
-        if (mControlsFragment != null) {
-            mControlsFragment.onConnected();
-        }
-
-        onMediaControllerConnected();*/
-    }
-
-
-    private final MediaBrowserCompat.ConnectionCallback mConnectionCallback =
-            new MediaBrowserCompat.ConnectionCallback() {
-                @Override
-                public void onConnected() {
-                    LogHelper.d(TAG, "onConnected");
-                    try {
-                        connectToSession(mMediaBrowser.getSessionToken());
-                    } catch (RemoteException e) {
-                        LogHelper.e(TAG, e, "could not connect media controller");
-                        hidePlaybackControls();
-                    }
-                }
-            };
 }

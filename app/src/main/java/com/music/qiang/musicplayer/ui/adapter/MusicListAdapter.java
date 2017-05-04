@@ -58,12 +58,28 @@ public class MusicListAdapter extends RecyclerView.Adapter<MusicListAdapter.MyVi
         holder.musicName.setText(musicFiles.get(position).musicName);
         holder.musicInfo.setText(musicFiles.get(position).musicArtist + " - " + musicFiles.get(position).musicAlbum);
 
-        uri = ContentUris.withAppendedId(sArtworkUri, musicFiles.get(position).musicAlubmId);
-        Picasso.with(mContext)
-                .load(uri)
-                .resize(StringUtils.dip2px(48), StringUtils.dip2px(48))
-                .error(R.mipmap.ic_black_rubber)
-                .into(holder.musicIcon);
+        if (!StringUtils.isNullOrEmpty(musicFiles.get(position).albumpic_big) || !StringUtils.isNullOrEmpty(musicFiles.get(position).albumpic_small)) {
+            if (!StringUtils.isNullOrEmpty(musicFiles.get(position).albumpic_big)) {
+                Picasso.with(mContext)
+                        .load(musicFiles.get(position).albumpic_big)
+                        .resize(StringUtils.dip2px(48), StringUtils.dip2px(48))
+                        .error(R.mipmap.ic_black_rubber)
+                        .into(holder.musicIcon);
+            } else {
+                Picasso.with(mContext)
+                        .load(musicFiles.get(position).albumpic_small)
+                        .resize(StringUtils.dip2px(48), StringUtils.dip2px(48))
+                        .error(R.mipmap.ic_black_rubber)
+                        .into(holder.musicIcon);
+            }
+        } else {
+            uri = ContentUris.withAppendedId(sArtworkUri, musicFiles.get(position).musicAlubmId);
+            Picasso.with(mContext)
+                    .load(uri)
+                    .resize(StringUtils.dip2px(48), StringUtils.dip2px(48))
+                    .error(R.mipmap.ic_black_rubber)
+                    .into(holder.musicIcon);
+        }
 
         Log.d("xuqiang", "------------- load view -----------" + position);
 

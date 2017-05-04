@@ -4,7 +4,6 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.provider.MediaStore;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -21,7 +20,7 @@ import java.util.ArrayList;
 /**
  * 专辑详情页
  */
-public class AlbumDetailActivity extends AppCompatActivity {
+public class AlbumDetailActivity extends BaseActivity {
 
     // ****************Views*******************
     private Toolbar toolbar;
@@ -37,7 +36,7 @@ public class AlbumDetailActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_album_detail);
+        setView(R.layout.activity_album_detail, 0);
 
         initViews();
         fetchIntent();
@@ -45,17 +44,6 @@ public class AlbumDetailActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setDisplayShowHomeEnabled(true);
-        //setTitle(playList.get(playIndex).musicName);
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                finish();
-            }
-        });
         musicListView = (RecyclerView) findViewById(R.id.rv_activity_album_detail_list);
     }
 
