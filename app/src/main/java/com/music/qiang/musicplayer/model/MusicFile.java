@@ -23,6 +23,8 @@ public class MusicFile implements Serializable, Cloneable {
     public String musicTime; // 音乐时长
     public String musicSize; // 音乐文件大小
     public Uri musicThumbnail;// 图片缩略图
+    public String albumpic_big;
+    public String albumpic_small;
 
     /**
      * Creates and returns a copy of this object.  The precise meaning
