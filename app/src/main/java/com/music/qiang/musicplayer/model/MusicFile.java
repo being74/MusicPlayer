@@ -13,18 +13,19 @@ public class MusicFile implements Serializable, Cloneable {
 
     private static final long serialVersionUID = -6068044584522608925L;
 
-    public String musicId; // 音乐ID
-    public String musicName; // 音乐名称
-    public String musicArtist; // 艺术家名称
-    public String musicPath; // 音乐路径
-    public String musicAlbum; // 所在专辑名称
-    public long musicAlubmId; // 专辑id
-    public String musicType; // 音乐类别
-    public String musicTime; // 音乐时长
-    public String musicSize; // 音乐文件大小
-    public Uri musicThumbnail;// 图片缩略图
-    public String albumpic_big;
-    public String albumpic_small;
+    public String musicId;          // 音乐ID
+    public String musicName;        // 音乐名称
+    public String musicArtist;      // 艺术家名称
+    public String musicPath;        // 音乐路径
+    public String musicAlbum;       // 所在专辑名称
+    public long musicAlubmId;       // 专辑id
+    public String musicType;        // 音乐类别
+    public String musicTime;        // 音乐时长
+    public String musicSize;        // 音乐文件大小
+    public Uri musicThumbnail;      // 图片缩略图
+    public String albumpic_big;     // 在线大图标
+    public String albumpic_small;   // 在线小图标
+    public String playType;         // 播放类型，分为"online"和"local"
 
     /**
      * Creates and returns a copy of this object.  The precise meaning
