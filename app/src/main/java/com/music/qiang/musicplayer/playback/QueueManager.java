@@ -39,25 +39,30 @@ public class QueueManager {
 
     private static QueueManager instance;
 
-    private QueueManager(List<MusicFile> queue) {
-        if (queue != null && queue.size() > 0) {
+    private QueueManager() {
+        /*if (queue != null && queue.size() > 0) {
             this.mQueue = queue;
-        }
+        }*/
         mCurrentIndex = 0;
-        mCurrentMediaId = mQueue.get(mCurrentIndex).musicId;
+        //mCurrentMediaId = mQueue.get(mCurrentIndex).musicId;
     }
 
-    public static QueueManager getInstance(List<MusicFile> queue) {
+    public static QueueManager getInstance() {
         if (instance == null) {
             synchronized (QueueManager.class) {
                 if (instance == null) {
-                    instance = new QueueManager(queue);
+                    instance = new QueueManager();
                 }
             }
         }
         return instance;
     }
 
+    public void setmQueue(List<MusicFile> newQueue) {
+        this.mQueue = newQueue;
+        mCurrentIndex = 0;
+        mCurrentMediaId = mQueue.get(mCurrentIndex).musicId;
+    }
 
     public void setCurrentQueue(List<MusicFile> newQueue) {
         setCurrentQueue(newQueue, null);
