@@ -18,8 +18,7 @@ import com.google.gson.GsonBuilder;
 import com.loopj.android.http.AsyncHttpResponseHandler;
 import com.music.qiang.musicplayer.R;
 import com.music.qiang.musicplayer.model.MusicFile;
-import com.music.qiang.musicplayer.model.online.Root;
-import com.music.qiang.musicplayer.model.online.Songlist;
+import com.music.qiang.musicplayer.model.MusicOnlineBean;
 import com.music.qiang.musicplayer.support.utils.HttpUtil;
 import com.music.qiang.musicplayer.ui.activity.MusicPlayActivity;
 import com.music.qiang.musicplayer.ui.adapter.MusicListAdapter;
@@ -94,15 +93,15 @@ public class MoreFragment extends Fragment {
     }
 
     private void initData() {
-        final String url = "http://route.showapi.com/213-4?showapi_appid=35608&topid=5&showapi_sign=dd559b3a18ee485fa098924d3df792ab";
+        final String url = "http://route.showapi.com/213-4?showapi_appid=35608&topid=6&showapi_sign=dd559b3a18ee485fa098924d3df792ab";
 
         AsyncHttpResponseHandler asyncHttpResponseHandler = new AsyncHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
                 response = new String(responseBody);
                 Gson gson = new GsonBuilder().create();
-                Root bean = gson.fromJson(response, Root.class);
-                List<Songlist> list = bean.getShowapi_res_body().getPagebean().getSonglist();
+                MusicOnlineBean bean = gson.fromJson(response, MusicOnlineBean.class);
+                List<MusicOnlineBean.ShowapiResBodyBean.PagebeanBean.SonglistBeanX> list = bean.getShowapi_res_body().getPagebean().getSonglist();
                 initAdapter(list);
             }
 
@@ -115,7 +114,7 @@ public class MoreFragment extends Fragment {
 
     }
 
-    private void initAdapter(List<Songlist> list) {
+    private void initAdapter(List<MusicOnlineBean.ShowapiResBodyBean.PagebeanBean.SonglistBeanX> list) {
         musicFiles = new ArrayList<>();
         for (int i = 0; i < list.size(); i++) {
             MusicFile file = new MusicFile();
@@ -144,7 +143,6 @@ public class MoreFragment extends Fragment {
                 bundle.putString("from", "list");
                 bundle.putInt("playIndex", position);
                 bundle.putSerializable("playList", musicFiles);
-                bundle.putString("playType", "online");
                 intent.putExtras(bundle);
                 startActivity(intent);
             }
