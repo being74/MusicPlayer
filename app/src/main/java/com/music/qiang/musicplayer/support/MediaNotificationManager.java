@@ -20,7 +20,9 @@ import com.music.qiang.musicplayer.events.ServiceControlEvent;
 import com.music.qiang.musicplayer.model.MusicFile;
 import com.music.qiang.musicplayer.playback.LocalPlayback;
 import com.music.qiang.musicplayer.service.PlayBackService;
+import com.music.qiang.musicplayer.support.utils.StringUtils;
 import com.music.qiang.musicplayer.ui.activity.MusicPlayActivity;
+import com.squareup.picasso.Picasso;
 
 import org.greenrobot.eventbus.EventBus;
 
@@ -45,7 +47,6 @@ public class MediaNotificationManager extends BroadcastReceiver {
 
     private PlayBackService mPlayBackService;
 
-    private RemoteViews mRemoteViews, mRemoteViewsSmall;
     private final NotificationManagerCompat mNotificationManager;
     private NotificationCompat.Builder builder;
     private Intent resultIntent;
@@ -54,6 +55,9 @@ public class MediaNotificationManager extends BroadcastReceiver {
     private final PendingIntent mPreviousIntent;
     private final PendingIntent mNextIntent;
     private final PendingIntent mStopCastIntent;
+    private Notification notification;
+
+    private RemoteViews mRemoteViews, mRemoteViewsSmall;
 
     public MediaNotificationManager(PlayBackService mPlayBackService) {
         this.mPlayBackService = mPlayBackService;
@@ -132,7 +136,7 @@ public class MediaNotificationManager extends BroadcastReceiver {
             PendingIntent pendingIntent = PendingIntent.getActivity(mPlayBackService, REQUEST_CODE, resultIntent, PendingIntent.FLAG_CANCEL_CURRENT);
             builder.setContentIntent(pendingIntent);
 
-            Notification notification = builder.build();
+            notification = builder.build();
             notification.bigContentView = mRemoteViews;
             notification.contentView = mRemoteViewsSmall;
             notification.flags = Notification.FLAG_AUTO_CANCEL;
@@ -177,11 +181,35 @@ public class MediaNotificationManager extends BroadcastReceiver {
         }
         if (file != null) {
             // 给大尺寸通知赋值
-            mRemoteViews.setImageViewUri(R.id.iv_notifi_play_back_thumb, ContentUris.withAppendedId(sArtworkUri, file.musicAlubmId));
+            if (!StringUtils.isNullOrEmpty(file.playType) && "online".equals(file.playType)) {
+                if (!StringUtils.isNullOrEmpty(file.albumpic_big)) {
+                    // 大视图的图标
+                    Picasso.with(mPlayBackService)
+                            .load(file.albumpic_big)
+                            .into(mRemoteViews, R.id.iv_notifi_play_back_thumb, NOTIFICATION_ID, notification);
+                    // 小视图的图标
+                    Picasso.with(mPlayBackService)
+                            .load(file.albumpic_big)
+                            .into(mRemoteViews, R.id.iv_notifi_play_back_small_thumb, NOTIFICATION_ID, notification);
+                } else {
+                    // 大视图的图标
+                    Picasso.with(mPlayBackService)
+                            .load(file.albumpic_small)
+                            .into(mRemoteViews, R.id.iv_notifi_play_back_thumb, NOTIFICATION_ID, notification);
+                    // 小视图的图标
+                    Picasso.with(mPlayBackService)
+                            .load(file.albumpic_small)
+                            .into(mRemoteViews, R.id.iv_notifi_play_back_small_thumb, NOTIFICATION_ID, notification);
+                }
+            } else {
+                mRemoteViews.setImageViewUri(R.id.iv_notifi_play_back_thumb, ContentUris.withAppendedId(sArtworkUri, file.musicAlubmId));
+                mRemoteViewsSmall.setImageViewUri(R.id.iv_notifi_play_back_small_thumb, ContentUris.withAppendedId(sArtworkUri, file.musicAlubmId));
+            }
+
             mRemoteViews.setTextViewText(R.id.tv_notifi_play_back_name, file.musicName);
             mRemoteViews.setTextViewText(R.id.tv_notifi_play_back_artist, file.musicArtist);
             // 给小尺寸通知赋值
-            mRemoteViewsSmall.setImageViewUri(R.id.iv_notifi_play_back_small_thumb, ContentUris.withAppendedId(sArtworkUri, file.musicAlubmId));
+
             mRemoteViewsSmall.setTextViewText(R.id.tv_notifi_play_back_small_name, file.musicName);
             mRemoteViewsSmall.setTextViewText(R.id.tv_notifi_play_back_small_artist, file.musicArtist);
         }
