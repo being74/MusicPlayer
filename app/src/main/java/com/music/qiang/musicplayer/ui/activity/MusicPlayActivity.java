@@ -14,10 +14,14 @@ import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.view.Gravity;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.view.animation.LinearInterpolator;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
+import android.widget.PopupWindow;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -32,6 +36,7 @@ import com.music.qiang.musicplayer.playback.LocalPlayback;
 import com.music.qiang.musicplayer.service.PlayBackService;
 import com.music.qiang.musicplayer.support.utils.StringUtils;
 import com.music.qiang.musicplayer.support.utils.ViewUtils;
+import com.music.qiang.musicplayer.ui.view.MusicQueuePopup;
 import com.music.qiang.musicplayer.ui.view.RoundImageView;
 import com.squareup.picasso.Picasso;
 
@@ -53,7 +58,7 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
     /**
      * 开始/暂停 按钮
      */
-    private ImageView playButton, playPre, playNext, playQueueTypeIcon, playQueueIcon;
+    private ImageView playButton, playPre, playNext, playQueueTypeIcon, playQueueMoreIcon;
     private TextView musicPlayTime, musicPlayAlltime;
     private SeekBar seekBar;
     private RoundImageView roundImageView;
@@ -84,6 +89,7 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
     //***************对象***************
     private SharedPreferences sharedPreferences;
     private ObjectAnimator rubberRotation;
+    private MusicQueuePopup musicQueuePopup;
     /**
      * 播放业务处理类
      */
@@ -171,7 +177,7 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
         playPre = (ImageView) findViewById(R.id.ib_fragment_music_play_pre);
         playNext = (ImageView) findViewById(R.id.ib_fragment_music_play_next);
         playQueueTypeIcon = (ImageView) findViewById(R.id.iv_activity_music_play_type);
-        playQueueIcon = (ImageView) findViewById(R.id.iv_activity_music_play_more);
+        playQueueMoreIcon = (ImageView) findViewById(R.id.iv_activity_music_play_more);
         seekBar = (SeekBar) findViewById(R.id.sb_activity_music_play);
         musicPlayTime = (TextView) findViewById(R.id.tv_activity_music_play_time);
         musicPlayAlltime = (TextView) findViewById(R.id.tv_activity_music_play_all_time);
@@ -195,25 +201,23 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
                 break;
         }
         // 如果进入页面时正在播放，开始旋转动画
-        if (localPlayback.getState() == PlaybackState.STATE_PLAYING) {
-            switch (localPlayback.getState()) {
-                case PlaybackState.STATE_PAUSED:
-                    playButton.setImageResource(R.mipmap.ic_music_play_dark);
-                    pauseAnimation();
-                    break;
-                case PlaybackState.STATE_BUFFERING:
-                case PlaybackState.STATE_STOPPED:
-                    playButton.setImageResource(R.mipmap.ic_music_play_dark);
-                    pauseAnimation();
-                    break;
-                case PlaybackState.STATE_PLAYING:
-                    playButton.setImageResource(R.mipmap.ic_music_pause_dark);
-                    startAnimation();
-                    break;
-            }
-            if (rubberRotation == null) {
+        if (localPlayback.getState() == PlaybackState.STATE_PLAYING && rubberRotation == null) {
+            startAnimation();
+        }
+        switch (localPlayback.getState()) {
+            case PlaybackState.STATE_PAUSED:
+                playButton.setImageResource(R.mipmap.ic_music_play_dark);
+                pauseAnimation();
+                break;
+            case PlaybackState.STATE_BUFFERING:
+            case PlaybackState.STATE_STOPPED:
+                playButton.setImageResource(R.mipmap.ic_music_play_dark);
+                pauseAnimation();
+                break;
+            case PlaybackState.STATE_PLAYING:
+                playButton.setImageResource(R.mipmap.ic_music_pause_dark);
                 startAnimation();
-            }
+                break;
         }
     }
 
@@ -222,7 +226,7 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
         playPre.setOnClickListener(this);
         playNext.setOnClickListener(this);
         playQueueTypeIcon.setOnClickListener(this);
-        playQueueIcon.setOnClickListener(this);
+        playQueueMoreIcon.setOnClickListener(this);
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -275,11 +279,6 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
     }
 
     private void refreshUI(MusicFile file) {
-        /*Picasso.with(this)
-                .load(ContentUris.withAppendedId(sArtworkUri, playList.get(playIndex).musicAlubmId))
-                .error(R.mipmap.ic_black_rubber)
-                .into(roundPaddingImageView);*/
-        //localPlayback = LocalPlayback.getInstance();
         setBlurBackground(file);
 
         toolbar.setTitle(file.musicName);
@@ -411,8 +410,46 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
                 EventBus.getDefault().post(new PlayModeEvent(currentMode));
                 break;
             case R.id.iv_activity_music_play_more:
+                handleMusicQueuePopup();
                 break;
         }
+    }
+
+    private void handleMusicQueuePopup() {
+        musicQueuePopup = new MusicQueuePopup(this);
+        final Window window = getWindow();
+        window.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
+        final WindowManager.LayoutParams lp = window.getAttributes();
+        //musicQueuePopup.setAnimationStyle(R.style.AnimBottom);
+        // 弹出popupwindow
+        musicQueuePopup.showAtLocation(findViewById(R.id.ll_activity_music_play), Gravity.BOTTOM, 0, 0);
+        // 设置背景颜色变暗(渐变动画)
+        final ValueAnimator showAnimation = ValueAnimator.ofFloat(1.0f, 0.4f);
+        showAnimation.setDuration(300);
+        showAnimation.start();
+        showAnimation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+            @Override
+            public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                lp.alpha = (float) valueAnimator.getAnimatedValue();
+                window.setAttributes(lp);
+            }
+        });
+        musicQueuePopup.setOnDismissListener(new PopupWindow.OnDismissListener() {
+            @Override
+            public void onDismiss() {
+                final ValueAnimator animation = ValueAnimator.ofFloat(0.4f, 1.0f);
+                animation.setDuration(300);
+                animation.start();
+
+                animation.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                    @Override
+                    public void onAnimationUpdate(ValueAnimator valueAnimator) {
+                        lp.alpha = (float) valueAnimator.getAnimatedValue();
+                        window.setAttributes(lp);
+                    }
+                });
+            }
+        });
     }
 
     /**
