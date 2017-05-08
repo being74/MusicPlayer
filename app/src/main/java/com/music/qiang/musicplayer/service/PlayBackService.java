@@ -5,14 +5,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.session.PlaybackState;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.HandlerThread;
 import android.os.IBinder;
-import android.os.Looper;
-import android.os.Message;
-import android.os.Process;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import com.music.qiang.musicplayer.events.MusicProgressEvent;
 import com.music.qiang.musicplayer.events.PlayModeEvent;
@@ -41,8 +35,6 @@ public class PlayBackService extends Service {
     private QueueManager queueManager;
     private PlayBackManager playBackManager;
     private MediaNotificationManager mediaNotificationManager;
-    private Looper mServiceLooper;
-    private ServiceHandler mServiceHandler;
     private ArrayList<MusicFile> playList;
 
     //*****************基本数据类型****************
@@ -58,39 +50,6 @@ public class PlayBackService extends Service {
      */
     private String playType = "local";
 
-    private final class ServiceHandler extends Handler {
-        public ServiceHandler(Looper looper) {
-            super(looper);
-        }
-
-        /**
-         * Subclasses must implement this to receive messages.
-         *
-         * @param msg
-         */
-        @Override
-        public void handleMessage(Message msg) {
-            switch (msg.what) {
-                default:
-                    // 开始播放
-                    try {
-                        /*Uri contentUri = ContentUris.withAppendedId(
-                                android.provider.MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, musicId);
-                        mediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-                        mediaPlayer.setDataSource(getApplicationContext(), contentUri);
-                        mediaPlayer.prepare();
-                        mediaPlayer.start();*/
-                    } catch (Exception e) {
-                        Thread.currentThread().interrupt();
-                    }
-                    break;
-            }
-            Log.d("xuqiang", "msg.arg1=" + msg.arg1);
-            // 通过startId来停止一个服务，以防影响其他正在执行的服务
-            //stopSelf(msg.arg1);
-            //stopSelfResult(msg.arg1);
-        }
-    }
 
     public PlayBackService() {
     }
@@ -99,13 +58,6 @@ public class PlayBackService extends Service {
     public void onCreate() {
         super.onCreate();
         EventBus.getDefault().register(this);
-
-        HandlerThread thread = new HandlerThread("ServiceStartArgument",
-                Process.THREAD_PRIORITY_BACKGROUND);
-        thread.start();
-
-        mServiceLooper = thread.getLooper();
-        mServiceHandler = new ServiceHandler(mServiceLooper);
 
         mediaNotificationManager = new MediaNotificationManager(this);
         mediaNotificationManager.showNotification();
@@ -143,7 +95,8 @@ public class PlayBackService extends Service {
         }
 
         if (playList != null && playList.size() > 0) {
-            queueManager = QueueManager.getInstance(playList);
+            queueManager = QueueManager.getInstance();
+            queueManager.setmQueue(playList);
             // 设置队列播放模式 0-列表循环；1-单曲循环；2-随机播放
             if (0 == currentMode) {
                 queueManager.setCurrentQueue(playList, String.valueOf(musicId));
@@ -153,15 +106,24 @@ public class PlayBackService extends Service {
                 queueManager.setRandomQueue(playList, String.valueOf(musicId));
             }
         } else {
-            queueManager = QueueManager.getInstance(null);
+            queueManager = QueueManager.getInstance();
         }
 
         LocalPlayback playback = LocalPlayback.getInstance();
         // 创建播放类管理者
         playBackManager = new PlayBackManager(queueManager, playback);
-        playBackManager.setPlayType(playType);
-        playBackManager.handlePlay();
 
+        // 如果是从播放列表进入的，则重新播放
+        if (!StringUtils.isNullOrEmpty(from) && "list".equals(from) ) {
+            playBackManager.handlePlay();
+        } else {
+            if (queueManager.getCurrentMusic() != null) {
+                // 更新ui
+                EventBus.getDefault().post(queueManager.getCurrentMusic());
+                playType = queueManager.getCurrentMusic().playType;
+            }
+        }
+        playBackManager.setPlayType(playType);
         return START_STICKY;
     }
 
