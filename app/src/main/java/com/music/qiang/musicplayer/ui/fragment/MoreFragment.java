@@ -129,6 +129,7 @@ public class MoreFragment extends Fragment {
             file.musicAlubmId = list.get(i).getAlbumid();
             file.albumpic_big = list.get(i).getAlbumpic_big();
             file.albumpic_small = list.get(i).getAlbumpic_small();
+            file.playType = "online";   // 区别于本地音乐播放
             musicFiles.add(file);
         }
 
