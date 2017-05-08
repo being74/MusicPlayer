@@ -123,10 +123,7 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
         }
         intent.putExtras(bundle);
         startService(intent);
-        // 如果进入页面时正在播放，开始旋转动画
-        if (localPlayback.getState() == PlaybackState.STATE_PLAYING && rubberRotation == null) {
-            startAnimation();
-        }
+
     }
 
     @Override
@@ -196,6 +193,27 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
             case 2:
                 playQueueTypeIcon.setImageResource(R.mipmap.ic_music_play_random_dark);
                 break;
+        }
+        // 如果进入页面时正在播放，开始旋转动画
+        if (localPlayback.getState() == PlaybackState.STATE_PLAYING) {
+            switch (localPlayback.getState()) {
+                case PlaybackState.STATE_PAUSED:
+                    playButton.setImageResource(R.mipmap.ic_music_play_dark);
+                    pauseAnimation();
+                    break;
+                case PlaybackState.STATE_BUFFERING:
+                case PlaybackState.STATE_STOPPED:
+                    playButton.setImageResource(R.mipmap.ic_music_play_dark);
+                    pauseAnimation();
+                    break;
+                case PlaybackState.STATE_PLAYING:
+                    playButton.setImageResource(R.mipmap.ic_music_pause_dark);
+                    startAnimation();
+                    break;
+            }
+            if (rubberRotation == null) {
+                startAnimation();
+            }
         }
     }
 
@@ -278,6 +296,7 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
             String second = df.format((musicTime / 1000) % 60);
             musicPlayAlltime.setText(minute + ":" + second);
         }
+
     }
 
     /**
@@ -286,7 +305,7 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
     @SuppressWarnings("deprecation")
     private void setBlurBackground(MusicFile file) {
         try {
-            if (!StringUtils.isNullOrEmpty(playType) && "online".equals(playType)) {
+            if (!StringUtils.isNullOrEmpty(file.playType) && "online".equals(file.playType)) {
                 if (!StringUtils.isNullOrEmpty(file.albumpic_big)) {
                     Picasso.with(this)
                             .load(file.albumpic_big)
