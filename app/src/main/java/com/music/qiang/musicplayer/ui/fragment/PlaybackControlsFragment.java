@@ -19,6 +19,7 @@ import com.music.qiang.musicplayer.events.PlaybackEvent;
 import com.music.qiang.musicplayer.events.ServiceControlEvent;
 import com.music.qiang.musicplayer.model.MusicFile;
 import com.music.qiang.musicplayer.playback.LocalPlayback;
+import com.music.qiang.musicplayer.playback.QueueManager;
 import com.music.qiang.musicplayer.support.utils.LogHelper;
 import com.music.qiang.musicplayer.support.utils.StringUtils;
 import com.music.qiang.musicplayer.ui.activity.MusicPlayActivity;
@@ -42,6 +43,7 @@ public class PlaybackControlsFragment extends Fragment implements View.OnClickLi
     private Context mContext;
     private Uri sArtworkUri = Uri.parse("content://media/external/audio/albumart");
     private LocalPlayback localPlayback;
+    private QueueManager queueManager;
     private OnFragmentInteractionListener mListener;
     // ~~~~~~~~~~~~~~~基本数据~~~~~~~~~~~~~
     private static final String TAG = LogHelper.makeLogTag(PlaybackControlsFragment.class);
@@ -92,14 +94,51 @@ public class PlaybackControlsFragment extends Fragment implements View.OnClickLi
 
     private void initData() {
         localPlayback = LocalPlayback.getInstance();
+        queueManager = QueueManager.getInstance();
+        if (queueManager.getCurrentMusic() != null) {
+            refreshUI(queueManager.getCurrentMusic());
+        } else {
+            rootView.setVisibility(View.GONE);
+        }
+        switch (localPlayback.getState()) {
+            case PlaybackState.STATE_PAUSED:
+            case PlaybackState.STATE_BUFFERING:
+                playControl.setImageResource(R.mipmap.ic_music_play_dark);
+                break;
+            case PlaybackState.STATE_PLAYING:
+                playControl.setImageResource(R.mipmap.ic_music_pause_dark);
+                break;
+            case PlaybackState.STATE_STOPPED:
+                playControl.setImageResource(R.mipmap.ic_music_play_dark);
+                break;
+        }
     }
 
     private void refreshUI(MusicFile file) {
-        Picasso.with(mContext)
-                .load(ContentUris.withAppendedId(sArtworkUri, file.musicAlubmId))
-                .resize(StringUtils.dip2px(46), StringUtils.dip2px(46))
-                .error(R.mipmap.ic_black_rubber)
-                .into(thumbnail);
+        if (rootView.getVisibility() != View.VISIBLE) {
+            rootView.setVisibility(View.VISIBLE);
+        }
+        if (!StringUtils.isNullOrEmpty(file.playType) && "online".equals(file.playType)) {
+            if (!StringUtils.isNullOrEmpty(file.albumpic_big)) {
+                Picasso.with(mContext)
+                        .load(file.albumpic_big)
+                        .resize(StringUtils.dip2px(46), StringUtils.dip2px(46))
+                        .error(R.mipmap.ic_black_rubber)
+                        .into(thumbnail);
+            } else {
+                Picasso.with(mContext)
+                        .load(file.albumpic_small)
+                        .resize(StringUtils.dip2px(46), StringUtils.dip2px(46))
+                        .error(R.mipmap.ic_black_rubber)
+                        .into(thumbnail);
+            }
+        } else {
+            Picasso.with(mContext)
+                    .load(ContentUris.withAppendedId(sArtworkUri, file.musicAlubmId))
+                    .resize(StringUtils.dip2px(46), StringUtils.dip2px(46))
+                    .error(R.mipmap.ic_black_rubber)
+                    .into(thumbnail);
+        }
 
         musicName.setText(file.musicName);
         musicArtist.setText(file.musicArtist + " - " + file.musicAlbum);
@@ -147,16 +186,6 @@ public class PlaybackControlsFragment extends Fragment implements View.OnClickLi
                 startActivity(intent);
                 break;
             case R.id.iv_fragment_play_back_control:
-                /*switch (localPlayback.getState()) {
-                    case PlaybackState.STATE_PAUSED:
-                    case PlaybackState.STATE_BUFFERING:
-                        playControl.setImageResource(R.mipmap.ic_music_pause_dark);
-                        break;
-                    case PlaybackState.STATE_PLAYING:
-                        playControl.setImageResource(R.mipmap.ic_music_play_dark);
-                        break;
-                }*/
-                //EventBus.getDefault().post(new PlaybackEvent(localPlayback.getState()));
                 EventBus.getDefault().post(new ServiceControlEvent(localPlayback.getState()));
                 break;
         }
