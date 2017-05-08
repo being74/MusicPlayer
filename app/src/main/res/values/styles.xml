@@ -32,23 +32,8 @@
     </style>
 
     <style name="AnimBottom" parent="@android:style/Animation">
-        <item name="android:windowEnterAnimation">@animator/slide_in_from_bottom</item>
-        <item name="android:windowExitAnimation">@animator/slide_out_to_bottom</item>
+        <item name="android:windowEnterAnimation">@anim/push_bottom_in</item>
+        <item name="android:windowExitAnimation">@anim/push_bottom_out</item>
     </style>
-
-    <!--<style name="AnimTop" parent="@android:style/Animation">
-        <item name="android:windowEnterAnimation">@anim/anim_top_in</item>
-        <item name="android:windowExitAnimation">@anim/anim_top_out</item>
-    </style>
-
-    <style name="AnimRight" parent="@android:style/Animation">
-        <item name="android:windowEnterAnimation">@anim/forum_push_right_in</item>
-        <item name="android:windowExitAnimation">@anim/forum_push_right_out</item>
-    </style>
-
-    <style name="AnimAlpha" parent="@android:style/Animation">
-        <item name="android:windowEnterAnimation">@anim/anim_alpha_show</item>
-        <item name="android:windowExitAnimation">@anim/anim_alpha_fade</item>
-    </style>-->
 
 </resources>
