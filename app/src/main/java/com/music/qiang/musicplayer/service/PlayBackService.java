@@ -45,10 +45,6 @@ public class PlayBackService extends Service {
     private int currentMode = 0;
     private String musicId;
     private String from;
-    /**
-     * 播放类型，分为"online"和”local“
-     */
-    private String playType = "local";
 
 
     public PlayBackService() {
@@ -83,7 +79,6 @@ public class PlayBackService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         Bundle bundleObject = intent.getExtras();
         from = bundleObject.getString("from");
-        playType = bundleObject.getString("playType");
         currentMode = bundleObject.getInt("currentMode");
         // 如果是从列表页启动service时，获取播放列表和最开始播放的media
         if (!StringUtils.isNullOrEmpty(from) && "list".equals(from)) {
@@ -120,10 +115,8 @@ public class PlayBackService extends Service {
             if (queueManager.getCurrentMusic() != null) {
                 // 更新ui
                 EventBus.getDefault().post(queueManager.getCurrentMusic());
-                playType = queueManager.getCurrentMusic().playType;
             }
         }
-        playBackManager.setPlayType(playType);
         return START_STICKY;
     }
 

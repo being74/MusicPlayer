@@ -75,10 +75,6 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
      * 只有从播放列表过来的才重新获取播放列表
      */
     private String from;
-    /**
-     * 播放类型，分为"online"和”local“
-     */
-    private String playType = "local";
     private ArrayList<MusicFile> playList;
     private int playIndex;
     /**
@@ -122,7 +118,6 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
         Bundle bundle = new Bundle();
         bundle.putInt("currentMode", currentMode);
         bundle.putString("from", from);
-        bundle.putString("playType", playType);
         if (playList != null) {
             bundle.putSerializable("playList", playList);
             bundle.putInt("playIndex", playIndex);
@@ -150,7 +145,6 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
         Bundle bundleObject = getIntent().getExtras();
         if (bundleObject != null) {
             from = bundleObject.getString("from");
-            playType = bundleObject.getString("playType");
             if (from != null && "list".equals(from)) {
                 playList = (ArrayList<MusicFile>) bundleObject.getSerializable("playList");
                 playIndex = bundleObject.getInt("playIndex");
@@ -420,7 +414,7 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
         final Window window = getWindow();
         window.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
         final WindowManager.LayoutParams lp = window.getAttributes();
-        //musicQueuePopup.setAnimationStyle(R.style.AnimBottom);
+        musicQueuePopup.setAnimationStyle(R.style.AnimTop);
         // 弹出popupwindow
         musicQueuePopup.showAtLocation(findViewById(R.id.ll_activity_music_play), Gravity.BOTTOM, 0, 0);
         // 设置背景颜色变暗(渐变动画)

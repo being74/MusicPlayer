@@ -21,19 +21,11 @@ public class PlayBackManager implements IPlayback.Callback {
     private QueueManager queueManager;
 
     // ***************基本数据***************
-    /**
-     * 播放类型，分为"online"和”local“
-     */
-    private String playType;
 
     public PlayBackManager(QueueManager queueManager, IPlayback playback) {
         this.queueManager = queueManager;
         this.iPlayback = playback;
         iPlayback.setCallback(this);
-    }
-
-    public void setPlayType(String type) {
-        this.playType = type;
     }
 
     /**
@@ -42,7 +34,7 @@ public class PlayBackManager implements IPlayback.Callback {
     public void handlePlay() {
         MusicFile file = queueManager.getCurrentMusic();
         if (file != null) {
-            if (!StringUtils.isNullOrEmpty(playType) && "online".equals(playType)) {
+            if (!StringUtils.isNullOrEmpty(file.playType) && "online".equals(file.playType)) {
                 iPlayback.playOnline(file);
             } else {
                 iPlayback.play(file.musicId);
@@ -68,7 +60,7 @@ public class PlayBackManager implements IPlayback.Callback {
         if (queueManager.moveToPre()) {
             MusicFile file = queueManager.getCurrentMusic();
             if (file != null) {
-                if (!StringUtils.isNullOrEmpty(playType) && "online".equals(playType)) {
+                if (!StringUtils.isNullOrEmpty(file.playType) && "online".equals(file.playType)) {
                     iPlayback.playOnline(file);
                 } else {
                     iPlayback.play(file.musicId);
@@ -90,7 +82,7 @@ public class PlayBackManager implements IPlayback.Callback {
         if (queueManager.moveToNext(skip)) {
             MusicFile file = queueManager.getCurrentMusic();
             if (file != null) {
-                if (!StringUtils.isNullOrEmpty(playType) && "online".equals(playType)) {
+                if (!StringUtils.isNullOrEmpty(file.playType) && "online".equals(file.playType)) {
                     iPlayback.playOnline(file);
                 } else {
                     iPlayback.play(file.musicId);
