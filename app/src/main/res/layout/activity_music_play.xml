@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
+    android:id="@+id/ll_activity_music_play"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -38,8 +39,8 @@
 
             <com.music.qiang.musicplayer.ui.view.RoundImageView
                 android:id="@+id/riv_activity_music_play"
-                android:layout_width="180dp"
-                android:layout_height="180dp"
+                android:layout_width="170dp"
+                android:layout_height="170dp"
                 android:layout_gravity="center"/>
         </FrameLayout>
     </FrameLayout>
