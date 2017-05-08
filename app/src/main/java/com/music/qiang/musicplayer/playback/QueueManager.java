@@ -39,25 +39,26 @@ public class QueueManager {
 
     private static QueueManager instance;
 
-    private QueueManager(List<MusicFile> queue) {
-        if (queue != null && queue.size() > 0) {
-            this.mQueue = queue;
-        }
+    private QueueManager() {
         mCurrentIndex = 0;
-        mCurrentMediaId = mQueue.get(mCurrentIndex).musicId;
     }
 
-    public static QueueManager getInstance(List<MusicFile> queue) {
+    public static QueueManager getInstance() {
         if (instance == null) {
             synchronized (QueueManager.class) {
                 if (instance == null) {
-                    instance = new QueueManager(queue);
+                    instance = new QueueManager();
                 }
             }
         }
         return instance;
     }
 
+    public void setmQueue(List<MusicFile> newQueue) {
+        this.mQueue = newQueue;
+        mCurrentIndex = 0;
+        mCurrentMediaId = mQueue.get(mCurrentIndex).musicId;
+    }
 
     public void setCurrentQueue(List<MusicFile> newQueue) {
         setCurrentQueue(newQueue, null);
@@ -177,9 +178,25 @@ public class QueueManager {
         Log.d("xuqiang", "setRandomQueue#mCurrentIndex = " + mCurrentIndex);
     }
 
+    /**
+     * 获取正在播放的队列
+     * @return
+     */
     public List<MusicFile> getCurrentQueue() {
         if (mPlayingQueue != null && mPlayingQueue.size() > 0) {
             return mPlayingQueue;
+        } else {
+            return null;
+        }
+    }
+
+    /**
+     * 获取默认的播放队列，没有经过打乱排序的
+     * @return
+     */
+    public List<MusicFile> getDefaultQueue() {
+        if (mQueue != null && mQueue.size() > 0) {
+            return mQueue;
         } else {
             return null;
         }
