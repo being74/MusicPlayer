@@ -310,12 +310,17 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
                 }
             } else {
                 Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), ContentUris.withAppendedId(sArtworkUri, file.musicAlubmId));
+                //roundImageView.setImageBitmap(bitmap);
                 //final Bitmap blurBmp = BlurUtil.fastblur(this, bitmap, 25);//0-25，表示模糊值
                 //final Bitmap blurBmp = FastBlurUtil.doBlur(bitmap, 8, false);//0-25，表示模糊值
                 //final Drawable newBitmapDrawable = new BitmapDrawable(blurBmp); // 将Bitmap转换为Drawable
-                roundImageView.setImageBitmap(bitmap);
+                Picasso.with(this)
+                        .load(ContentUris.withAppendedId(sArtworkUri, file.musicAlubmId))
+                        .into(roundImageView);
             }
-
+            if (roundImageView.getVisibility() != View.VISIBLE) {
+                roundImageView.setVisibility(View.VISIBLE);
+            }
         } catch (IOException e) {
             e.printStackTrace();
             roundImageView.setVisibility(View.GONE);
@@ -331,7 +336,7 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
         rubberRotation = ObjectAnimator.ofFloat(rubberLayout, "Rotation",
                 currentRotationValue - 360, currentRotationValue);
         // 设置持续时间
-        rubberRotation.setDuration(40000);
+        rubberRotation.setDuration(35000);
         // 设置循环播放
         rubberRotation.setRepeatCount(ObjectAnimator.INFINITE);
         rubberRotation.setInterpolator(new LinearInterpolator());
@@ -410,11 +415,11 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
     }
 
     private void handleMusicQueuePopup() {
-        musicQueuePopup = new MusicQueuePopup(this);
+        musicQueuePopup = new MusicQueuePopup(this, currentMode);
         final Window window = getWindow();
         window.addFlags(WindowManager.LayoutParams.FLAG_DIM_BEHIND);
         final WindowManager.LayoutParams lp = window.getAttributes();
-        musicQueuePopup.setAnimationStyle(R.style.AnimTop);
+        musicQueuePopup.setAnimationStyle(R.style.AnimBottom);
         // 弹出popupwindow
         musicQueuePopup.showAtLocation(findViewById(R.id.ll_activity_music_play), Gravity.BOTTOM, 0, 0);
         // 设置背景颜色变暗(渐变动画)
