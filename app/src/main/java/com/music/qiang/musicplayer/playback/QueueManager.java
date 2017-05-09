@@ -2,7 +2,10 @@ package com.music.qiang.musicplayer.playback;
 
 import android.util.Log;
 
+import com.music.qiang.musicplayer.events.QueueSkipEvent;
 import com.music.qiang.musicplayer.model.MusicFile;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -272,24 +275,22 @@ public class QueueManager {
     }
 
     /**
-     * 根据mediaid获取在播放队列中的位置
+     * 根据mediaid获取在默认播放队列中的位置(未经随机播放打乱的播放队列)
      *
-     * @param target
-     * @return
+     * @param target 目标mediaid
+     * @return 队列中的位置
      */
-    /*private int getIndexOnRandomQueue(String target) {
-        if (mRandomQueue != null && mRandomQueue.size() > 0) {
-            int index = 0;
-            for (int i = 0; i < mRandomQueue.size(); i++) {
-                if (target.equals(mRandomQueue.get(i).musicId)) {
-                    mCurrentIndex = index;
-                    return index;
-                }
-                index++;
+    public int getIndexOnDefaultQueue(String target) {
+        int index = 0;
+        for (int i = 0; i < mQueue.size(); i++) {
+            if (target.equals(mQueue.get(i).musicId)) {
+                //mCurrentIndex = index;
+                return index;
             }
+            index++;
         }
         return -1;
-    }*/
+    }
 
     /**
      * 获取当前应该播放的媒体
@@ -301,6 +302,36 @@ public class QueueManager {
             return mPlayingQueue.get(mCurrentIndex);
         } else {
             return null;
+        }
+    }
+
+    /**
+     * 从当前播放队列中删除某一条
+     * @param file
+     */
+    public void removeFromQueue(MusicFile file) {
+        String tempId = file.musicId;
+        int temp = -1;
+        for (int i = 0; i < mPlayingQueue.size(); i++) {
+            if (tempId.equals(mPlayingQueue.get(i).musicId)) {
+                mPlayingQueue.remove(i);
+                temp = i;
+                break;
+            }
+        }
+
+        for (int i = 0; i < mQueue.size(); i++) {
+            if (tempId.equals(mQueue.get(i).musicId)) {
+                mQueue.remove(i);
+                break;
+            }
+        }
+        if (temp >= 0) {
+            if (mCurrentIndex > temp) {
+                mCurrentIndex--;
+            } else if (mCurrentIndex == temp) {
+                EventBus.getDefault().post(new QueueSkipEvent(1));
+            }
         }
     }
 
