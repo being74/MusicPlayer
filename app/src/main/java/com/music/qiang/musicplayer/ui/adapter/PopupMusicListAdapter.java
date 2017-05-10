@@ -14,6 +14,7 @@ import com.music.qiang.musicplayer.model.MusicFile;
 import com.music.qiang.musicplayer.support.utils.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -57,11 +58,13 @@ public class PopupMusicListAdapter extends RecyclerView.Adapter<PopupMusicListAd
     @Override
     public void onBindViewHolder(final MyViewHolder holder, final int position) {
         if (selectedPos == position) {
-            holder.musicName.setTextColor(mContext.getResources().getColor(R.color.colorBlue));
-            holder.musicArtist.setTextColor(mContext.getResources().getColor(R.color.colorBlue));
+            holder.musicName.setTextColor(mContext.getResources().getColor(R.color.colorBrown));
+            holder.musicArtist.setTextColor(mContext.getResources().getColor(R.color.colorBrown));
+            holder.playingIcon.setVisibility(View.VISIBLE);
         } else {
             holder.musicName.setTextColor(mContext.getResources().getColor(R.color.colorBlack2c));
             holder.musicArtist.setTextColor(mContext.getResources().getColor(R.color.colorAccent));
+            holder.playingIcon.setVisibility(View.GONE);
         }
         holder.musicName.setText(musicFiles.get(position).musicName);
         if (!StringUtils.isNullOrEmpty(musicFiles.get(position).musicArtist)) {
@@ -102,7 +105,7 @@ public class PopupMusicListAdapter extends RecyclerView.Adapter<PopupMusicListAd
         public RelativeLayout root;
         public TextView musicName;
         public TextView musicArtist;
-        public ImageView removeIcon;
+        public ImageView removeIcon, playingIcon;
 
         public MyViewHolder(View itemView) {
             super(itemView);
@@ -110,13 +113,19 @@ public class PopupMusicListAdapter extends RecyclerView.Adapter<PopupMusicListAd
             musicName = (TextView) itemView.findViewById(R.id.tv_item_popup_music_queue_name);
             musicArtist = (TextView) itemView.findViewById(R.id.tv_item_popup_music_queue_artist);
             removeIcon = (ImageView) itemView.findViewById(R.id.iv_item_popup_music_queue_remove);
+            playingIcon = (ImageView) itemView.findViewById(R.id.iv_item_popup_music_queue_playing);
         }
     }
 
     public void updateList(List<MusicFile> items) {
         if (items != null && items.size() > 0) {
-            musicFiles.clear();
-            musicFiles.addAll(items);
+            //musicFiles.clear();
+            musicFiles = new ArrayList<>(items.size());
+            Iterator<MusicFile> iterator = items.iterator();
+            while(iterator.hasNext()){
+                musicFiles.add(iterator.next().clone());
+            }
+            //musicFiles.addAll(items);
             notifyDataSetChanged();
         }
     }

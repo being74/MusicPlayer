@@ -330,6 +330,11 @@ public class QueueManager {
             if (mCurrentIndex > temp) {
                 mCurrentIndex--;
             } else if (mCurrentIndex == temp) {
+                if (mCurrentIndex > 0) {
+                    mCurrentIndex--;
+                } else {
+                    mCurrentIndex = mPlayingQueue.size() - 1;
+                }
                 EventBus.getDefault().post(new QueueSkipEvent(1));
             }
         }

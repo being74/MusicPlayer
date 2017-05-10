@@ -7,12 +7,12 @@ import android.os.Bundle;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
-import android.widget.Toast;
 
 import com.music.qiang.musicplayer.R;
 import com.music.qiang.musicplayer.model.MusicFile;
@@ -116,9 +116,9 @@ public class MusicQueuePopup extends PopupWindow implements View.OnClickListener
             public void onItemClickListener(View view, int position) {
                 switch (view.getId()) {
                     case R.id.iv_item_popup_music_queue_remove:
-                        Toast.makeText(mContext, position + " -- ", Toast.LENGTH_SHORT).show();
                         queueManager.removeFromQueue(musicFiles.get(position));
                         musicListAdapter.updateList(queueManager.getDefaultQueue());
+                        updateUI(queueManager.getCurrentMusic());
                         break;
                     default:
                         Intent intent = new Intent(mContext, PlayBackService.class);
@@ -161,6 +161,7 @@ public class MusicQueuePopup extends PopupWindow implements View.OnClickListener
     private void updateUI(MusicFile file) {
         if (queueManager.getCurrentMusic() != null) {
             currentIndex = queueManager.getIndexOnDefaultQueue(file.musicId);
+            Log.d("xuqiang", "---currentIndex = " + currentIndex);
         }
         musicListAdapter.setSelectedPos(currentIndex);
         recyclerView.scrollToPosition(currentIndex);
@@ -173,7 +174,6 @@ public class MusicQueuePopup extends PopupWindow implements View.OnClickListener
     @Subscribe(threadMode = ThreadMode.POSTING)
     public void mediaUpdateEvent(MusicFile file) {
         updateUI(file);
-
     }
 
 }
