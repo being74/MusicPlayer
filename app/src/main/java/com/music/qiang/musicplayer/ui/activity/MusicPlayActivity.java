@@ -29,6 +29,8 @@ import com.music.qiang.musicplayer.R;
 import com.music.qiang.musicplayer.events.MusicProgressEvent;
 import com.music.qiang.musicplayer.events.PlayModeEvent;
 import com.music.qiang.musicplayer.events.PlaybackEvent;
+import com.music.qiang.musicplayer.events.PlaytypeChangeManager;
+import com.music.qiang.musicplayer.events.PlaytypeChangeObserver;
 import com.music.qiang.musicplayer.events.QueueSkipEvent;
 import com.music.qiang.musicplayer.events.ServiceControlEvent;
 import com.music.qiang.musicplayer.model.MusicFile;
@@ -47,6 +49,7 @@ import org.greenrobot.eventbus.ThreadMode;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Observable;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -104,6 +107,28 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
         }
     };
 
+    /**
+     * 播放队列方式改变的观察者
+     */
+    private PlaytypeChangeObserver changeObserver = new PlaytypeChangeObserver() {
+        @Override
+        public void update(Observable o, Object arg) {
+            super.update(o, arg);
+            currentMode = Integer.parseInt(arg.toString());
+            switch (currentMode) {
+                case 0:
+                    playQueueTypeIcon.setImageResource(R.mipmap.ic_music_play_repeat_dark);
+                    break;
+                case 1:
+                    playQueueTypeIcon.setImageResource(R.mipmap.ic_music_play_repeat_one_dark);
+                    break;
+                case 2:
+                    playQueueTypeIcon.setImageResource(R.mipmap.ic_music_play_random_dark);
+                    break;
+            }
+        }
+    };
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -114,6 +139,10 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
         registListener();
         initData();
 
+        /*
+         * 播放队列改变的订阅者添加订阅
+         */
+        PlaytypeChangeManager.getInstance().addObserver(changeObserver);
         Intent intent = new Intent(this, PlayBackService.class);
         Bundle bundle = new Bundle();
         bundle.putInt("currentMode", currentMode);
@@ -139,6 +168,10 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
         stopSeekbarUpdate();
         stopAnimation();
         mExecutorService.shutdown();
+        /*
+         * 播放队列改变的订阅者取消订阅
+         */
+        PlaytypeChangeManager.getInstance().deleteObserver(changeObserver);
     }
 
     private void fetchIntents() {

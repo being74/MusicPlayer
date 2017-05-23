@@ -2,6 +2,7 @@ package com.music.qiang.musicplayer.ui.view;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.support.v7.widget.DividerItemDecoration;
@@ -11,10 +12,15 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
+import android.widget.TextView;
 
 import com.music.qiang.musicplayer.R;
+import com.music.qiang.musicplayer.events.PlayModeEvent;
+import com.music.qiang.musicplayer.events.PlaytypeChangeManager;
+import com.music.qiang.musicplayer.events.PlaytypeChangeObserver;
 import com.music.qiang.musicplayer.model.MusicFile;
 import com.music.qiang.musicplayer.playback.LocalPlayback;
 import com.music.qiang.musicplayer.playback.QueueManager;
@@ -40,10 +46,15 @@ public class MusicQueuePopup extends PopupWindow implements View.OnClickListener
     private PopupMusicListAdapter musicListAdapter;
     private QueueManager queueManager;
     private LocalPlayback localPlayback;
+    private SharedPreferences sharedPreferences;
+    private PlaytypeChangeObserver observer;
 
     // **************views*****************
     private View convertView;
     private RecyclerView recyclerView;
+    private LinearLayout playTypeLayout;
+    private TextView playType, playEdit;
+    private ImageView playTypeIcon;
 
     // **************基本数据*****************
     private ArrayList<MusicFile> musicFiles;
@@ -80,7 +91,7 @@ public class MusicQueuePopup extends PopupWindow implements View.OnClickListener
     private void initPopupWindow() {
         this.setContentView(convertView);
         this.setWidth(ViewGroup.LayoutParams.MATCH_PARENT);
-        this.setHeight(StringUtils.dip2px(360));
+        this.setHeight(StringUtils.dip2px(430));
         this.setTouchable(true);
         this.setFocusable(true);
         this.setOutsideTouchable(true);
@@ -96,6 +107,10 @@ public class MusicQueuePopup extends PopupWindow implements View.OnClickListener
      */
     private void initView() {
         recyclerView = (RecyclerView) convertView.findViewById(R.id.rv_popup_music_queue);
+        playTypeLayout = (LinearLayout) convertView.findViewById(R.id.ll_popup_music_queue_play_type);
+        playType = (TextView) convertView.findViewById(R.id.tv_popup_music_queue_play_type);
+        playEdit = (TextView) convertView.findViewById(R.id.tv_popup_music_queue_edit);
+        playTypeIcon = (ImageView) convertView.findViewById(R.id.iv_popup_music_queue_play_type);
         // 1. 创建线性LayoutManager
         mLayoutManager = new LinearLayoutManager(mContext);
         recyclerView.setLayoutManager(mLayoutManager);
@@ -138,9 +153,26 @@ public class MusicQueuePopup extends PopupWindow implements View.OnClickListener
 
             }
         });
+
     }
 
     private void initData() {
+        sharedPreferences = mContext.getSharedPreferences("playback", Context.MODE_PRIVATE);
+        currentMode = sharedPreferences.getInt("playMode", 0);
+        switch (currentMode) {
+            case 0:
+                playTypeIcon.setImageResource(R.mipmap.ic_music_play_repeat_dark);
+                playType.setText("列表循环");
+                break;
+            case 1:
+                playTypeIcon.setImageResource(R.mipmap.ic_music_play_repeat_one_dark);
+                playType.setText("单曲循环");
+                break;
+            case 2:
+                playTypeIcon.setImageResource(R.mipmap.ic_music_play_random_dark);
+                playType.setText("随机播放");
+                break;
+        }
         updateUI(queueManager.getCurrentMusic());
     }
 
@@ -151,11 +183,42 @@ public class MusicQueuePopup extends PopupWindow implements View.OnClickListener
                 EventBus.getDefault().unregister(this);
             }
         });
+        playTypeLayout.setOnClickListener(this);
+        playEdit.setOnClickListener(this);
     }
 
     @Override
     public void onClick(View v) {
-
+        switch (v.getId()) {
+            // 点击切换播放方式
+            case R.id.ll_popup_music_queue_play_type:
+                if (currentMode == 0) {
+                    currentMode = 1;
+                    playTypeIcon.setImageResource(R.mipmap.ic_music_play_repeat_one_dark);
+                    playType.setText("单曲循环");
+                } else if (currentMode == 1) {
+                    currentMode = 2;
+                    playTypeIcon.setImageResource(R.mipmap.ic_music_play_random_dark);
+                    playType.setText("随机播放");
+                } else if (currentMode == 2) {
+                    currentMode = 0;
+                    playTypeIcon.setImageResource(R.mipmap.ic_music_play_repeat_dark);
+                    playType.setText("列表循环");
+                }
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putInt("playMode", currentMode);
+                editor.apply();
+                EventBus.getDefault().post(new PlayModeEvent(currentMode));
+                /*
+                 * 切换播放方式，向订阅的观察者发送变更通知
+                 */
+                PlaytypeChangeManager.getInstance().notifyChange(currentMode);
+                break;
+            // 编辑播放列表
+            case R.id.tv_popup_music_queue_edit:
+                playEdit.setText("完成");
+                break;
+        }
     }
 
     private void updateUI(MusicFile file) {
