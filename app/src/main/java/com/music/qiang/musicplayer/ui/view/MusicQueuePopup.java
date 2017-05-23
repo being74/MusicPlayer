@@ -216,7 +216,16 @@ public class MusicQueuePopup extends PopupWindow implements View.OnClickListener
                 break;
             // 编辑播放列表
             case R.id.tv_popup_music_queue_edit:
-                playEdit.setText("完成");
+
+                if ("编辑".equals(playEdit.getText().toString())) {
+                    playEdit.setText("完成");
+                    musicListAdapter.notifyToEditMode(1);
+
+                } else {
+                    playEdit.setText("编辑");
+                    musicListAdapter.notifyToEditMode(0);
+                }
+
                 break;
         }
     }
