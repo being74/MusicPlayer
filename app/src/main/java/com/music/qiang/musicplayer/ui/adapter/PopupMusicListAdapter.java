@@ -2,9 +2,14 @@ package com.music.qiang.musicplayer.ui.adapter;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
+import android.support.v7.widget.helper.ItemTouchUIUtil;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -27,6 +32,10 @@ public class PopupMusicListAdapter extends RecyclerView.Adapter<PopupMusicListAd
     private ArrayList<MusicFile> musicFiles;
     private MyItemClickListener mOnItemClickListener;
     private int selectedPos = 0;
+    /**
+     * 列表模式 0：正常展示模式  1：编辑模式
+     */
+    private int mode = 0;
 
     public PopupMusicListAdapter(Context mContext, ArrayList<MusicFile> mData) {
         this.mContext = mContext;
@@ -57,6 +66,10 @@ public class PopupMusicListAdapter extends RecyclerView.Adapter<PopupMusicListAd
 
     @Override
     public void onBindViewHolder(final MyViewHolder holder, final int position) {
+        Log.d("xuqiang", "the " + position + " show.");
+        final MusicFile file = musicFiles.get(position);
+
+        // 处理选中的item的颜色以及正在播放的图标
         if (selectedPos == position) {
             holder.musicName.setTextColor(mContext.getResources().getColor(R.color.colorBrown));
             holder.musicArtist.setTextColor(mContext.getResources().getColor(R.color.colorBrown));
@@ -66,13 +79,34 @@ public class PopupMusicListAdapter extends RecyclerView.Adapter<PopupMusicListAd
             holder.musicArtist.setTextColor(mContext.getResources().getColor(R.color.colorAccent));
             holder.playingIcon.setVisibility(View.GONE);
         }
-        holder.musicName.setText(musicFiles.get(position).musicName);
-        if (!StringUtils.isNullOrEmpty(musicFiles.get(position).musicArtist)) {
-            holder.musicArtist.setText(" - " + musicFiles.get(position).musicArtist);
+        holder.musicName.setText(file.musicName);
+        if (!StringUtils.isNullOrEmpty(file.musicArtist)) {
+            holder.musicArtist.setText(" - " + file.musicArtist);
         } else {
             holder.musicArtist.setText("");
         }
 
+        holder.checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                file.isChecked = isChecked;
+            }
+        });
+        // 处理正常和编辑模式下不同的布局
+        if (mode == 0) {
+            holder.selectIcon.setVisibility(View.GONE);
+            holder.checkBox.setVisibility(View.GONE);
+            holder.removeIcon.setVisibility(View.VISIBLE);
+        } else if (mode == 1) {
+            holder.selectIcon.setVisibility(View.VISIBLE);
+            holder.checkBox.setVisibility(View.VISIBLE);
+            holder.removeIcon.setVisibility(View.GONE);
+            if (file.isChecked) {
+                holder.checkBox.setChecked(true);
+            } else {
+                holder.checkBox.setChecked(false);
+            }
+        }
         if (mOnItemClickListener != null) {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -105,7 +139,8 @@ public class PopupMusicListAdapter extends RecyclerView.Adapter<PopupMusicListAd
         public RelativeLayout root;
         public TextView musicName;
         public TextView musicArtist;
-        public ImageView removeIcon, playingIcon;
+        public ImageView removeIcon, playingIcon, selectIcon;
+        public CheckBox checkBox;
 
         public MyViewHolder(View itemView) {
             super(itemView);
@@ -114,6 +149,8 @@ public class PopupMusicListAdapter extends RecyclerView.Adapter<PopupMusicListAd
             musicArtist = (TextView) itemView.findViewById(R.id.tv_item_popup_music_queue_artist);
             removeIcon = (ImageView) itemView.findViewById(R.id.iv_item_popup_music_queue_remove);
             playingIcon = (ImageView) itemView.findViewById(R.id.iv_item_popup_music_queue_playing);
+            checkBox = (CheckBox) itemView.findViewById(R.id.cb_item_popup_music_queue_select);
+            selectIcon = (ImageView) itemView.findViewById(R.id.iv_item_popup_music_queue_select);
         }
     }
 
@@ -128,5 +165,10 @@ public class PopupMusicListAdapter extends RecyclerView.Adapter<PopupMusicListAd
             //musicFiles.addAll(items);
             notifyDataSetChanged();
         }
+    }
+
+    public void notifyToEditMode(int m) {
+        mode = m;
+        notifyDataSetChanged();
     }
 }
