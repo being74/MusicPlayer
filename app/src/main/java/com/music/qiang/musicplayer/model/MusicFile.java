@@ -26,6 +26,7 @@ public class MusicFile implements Serializable, Cloneable {
     public String albumpic_big;     // 在线大图标
     public String albumpic_small;   // 在线小图标
     public String playType;         // 播放类型，分为"online"和"local"
+    public boolean isChecked;       // 是否被选中
 
     /**
      * Creates and returns a copy of this object.  The precise meaning
