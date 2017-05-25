@@ -16,5 +16,8 @@
     <color name="colorCoffee">#3e2723</color>
     <color name="colorBlue">#3d5afe</color>
     <color name="colorBrown">#5D4037</color>
+    <color name="colorD9">#D9D9D9</color>
+    <color name="colorbg">#B0B2B3</color>
+
 
 </resources>
