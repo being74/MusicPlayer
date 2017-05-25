@@ -1,11 +1,11 @@
 package com.music.qiang.musicplayer.ui.adapter;
 
 import android.content.Context;
+import android.support.v4.view.MotionEventCompat;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.helper.ItemTouchHelper;
-import android.support.v7.widget.helper.ItemTouchUIUtil;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
@@ -17,8 +17,12 @@ import android.widget.TextView;
 import com.music.qiang.musicplayer.R;
 import com.music.qiang.musicplayer.model.MusicFile;
 import com.music.qiang.musicplayer.support.utils.StringUtils;
+import com.music.qiang.musicplayer.ui.adapter.helper.ItemTouchHelperAdapter;
+import com.music.qiang.musicplayer.ui.adapter.helper.ItemTouchHelperViewHolder;
+import com.music.qiang.musicplayer.ui.adapter.helper.OnStartDragListener;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -27,19 +31,21 @@ import java.util.List;
  * <p/>
  * Created by xuqiang on 2017/5/9.
  */
-public class PopupMusicListAdapter extends RecyclerView.Adapter<PopupMusicListAdapter.MyViewHolder> {
+public class PopupMusicListAdapter extends RecyclerView.Adapter<PopupMusicListAdapter.MyViewHolder> implements ItemTouchHelperAdapter {
     private Context mContext;
-    private ArrayList<MusicFile> musicFiles;
+    public ArrayList<MusicFile> musicFiles;
     private MyItemClickListener mOnItemClickListener;
+    private OnStartDragListener mDragStartListener;
     private int selectedPos = 0;
     /**
      * 列表模式 0：正常展示模式  1：编辑模式
      */
     private int mode = 0;
 
-    public PopupMusicListAdapter(Context mContext, ArrayList<MusicFile> mData) {
+    public PopupMusicListAdapter(Context mContext, ArrayList<MusicFile> mData, OnStartDragListener dragStartListener) {
         this.mContext = mContext;
         this.musicFiles = mData;
+        this.mDragStartListener = dragStartListener;
     }
 
     public void setSelectedPos(int pos) {
@@ -107,17 +113,37 @@ public class PopupMusicListAdapter extends RecyclerView.Adapter<PopupMusicListAd
                 holder.checkBox.setChecked(false);
             }
         }
+        holder.selectIcon.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (MotionEventCompat.getActionMasked(event) == MotionEvent.ACTION_DOWN) {
+                    mDragStartListener.onStartDrag(holder);
+                }
+                return false;
+            }
+        });
+
         if (mOnItemClickListener != null) {
             holder.itemView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    int position = holder.getAdapterPosition();
-                    // 更新老的视图
-                    notifyItemChanged(selectedPos);
-                    selectedPos = position;
-                    // 更新新点击的视图
-                    notifyItemChanged(selectedPos);
-                    mOnItemClickListener.onItemClickListener(holder.itemView, position);
+                    if (mode == 0) {
+                        int position = holder.getAdapterPosition();
+                        // 更新老的视图
+                        notifyItemChanged(selectedPos);
+                        selectedPos = position;
+                        // 更新新点击的视图
+                        notifyItemChanged(selectedPos);
+                        mOnItemClickListener.onItemClickListener(holder.itemView, position);
+                    } else if (mode == 1) {
+                        if (file.isChecked) {
+                            file.isChecked = false;
+                        } else {
+                            file.isChecked = true;
+                        }
+                        notifyItemChanged(position);
+                    }
+
                 }
             });
             holder.removeIcon.setOnClickListener(new View.OnClickListener() {
@@ -135,7 +161,7 @@ public class PopupMusicListAdapter extends RecyclerView.Adapter<PopupMusicListAd
         return musicFiles.size();
     }
 
-    public static class MyViewHolder extends RecyclerView.ViewHolder {
+    public static class MyViewHolder extends RecyclerView.ViewHolder implements ItemTouchHelperViewHolder {
         public RelativeLayout root;
         public TextView musicName;
         public TextView musicArtist;
@@ -152,6 +178,16 @@ public class PopupMusicListAdapter extends RecyclerView.Adapter<PopupMusicListAd
             checkBox = (CheckBox) itemView.findViewById(R.id.cb_item_popup_music_queue_select);
             selectIcon = (ImageView) itemView.findViewById(R.id.iv_item_popup_music_queue_select);
         }
+
+        @Override
+        public void onItemSelected() {
+            //itemView.setBackgroundColor(Color.DKGRAY);
+        }
+
+        @Override
+        public void onItemClear() {
+            itemView.setBackgroundResource(R.drawable.ripple_item_selector);
+        }
     }
 
     public void updateList(List<MusicFile> items) {
@@ -159,7 +195,7 @@ public class PopupMusicListAdapter extends RecyclerView.Adapter<PopupMusicListAd
             //musicFiles.clear();
             musicFiles = new ArrayList<>(items.size());
             Iterator<MusicFile> iterator = items.iterator();
-            while(iterator.hasNext()){
+            while (iterator.hasNext()) {
                 musicFiles.add(iterator.next().clone());
             }
             //musicFiles.addAll(items);
@@ -167,8 +203,34 @@ public class PopupMusicListAdapter extends RecyclerView.Adapter<PopupMusicListAd
         }
     }
 
+    /**
+     * 切换正式模式还是编辑模式
+     *
+     * @param m 0：正常模式 1：编辑模式
+     */
     public void notifyToEditMode(int m) {
         mode = m;
         notifyDataSetChanged();
+    }
+
+    @Override
+    public boolean onItemMove(int from, int to) {
+        if (from < to) {
+            for (int i = from; i < to; i++) {
+                Collections.swap(musicFiles, i, i + 1);
+            }
+        } else {
+            for (int i = from; i > to; i--) {
+                Collections.swap(musicFiles, i, i - 1);
+            }
+        }
+        notifyItemMoved(from, to);
+        return true;
+    }
+
+    @Override
+    public void onItemDismiss(int postion) {
+        musicFiles.remove(postion);
+        notifyItemRemoved(postion);
     }
 }

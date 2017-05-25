@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -20,13 +21,14 @@ import android.widget.TextView;
 import com.music.qiang.musicplayer.R;
 import com.music.qiang.musicplayer.events.PlayModeEvent;
 import com.music.qiang.musicplayer.events.PlaytypeChangeManager;
-import com.music.qiang.musicplayer.events.PlaytypeChangeObserver;
 import com.music.qiang.musicplayer.model.MusicFile;
 import com.music.qiang.musicplayer.playback.LocalPlayback;
 import com.music.qiang.musicplayer.playback.QueueManager;
 import com.music.qiang.musicplayer.service.PlayBackService;
 import com.music.qiang.musicplayer.support.utils.StringUtils;
 import com.music.qiang.musicplayer.ui.adapter.PopupMusicListAdapter;
+import com.music.qiang.musicplayer.ui.adapter.helper.OnStartDragListener;
+import com.music.qiang.musicplayer.ui.adapter.helper.SimpleItemTouchHelperCallback;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -37,7 +39,7 @@ import java.util.ArrayList;
 /**
  * Created by xuqiang on 2017/5/8.
  */
-public class MusicQueuePopup extends PopupWindow implements View.OnClickListener {
+public class MusicQueuePopup extends PopupWindow implements View.OnClickListener, OnStartDragListener {
 
     // **************类和对象*****************
     private Context mContext;
@@ -47,13 +49,13 @@ public class MusicQueuePopup extends PopupWindow implements View.OnClickListener
     private QueueManager queueManager;
     private LocalPlayback localPlayback;
     private SharedPreferences sharedPreferences;
-    private PlaytypeChangeObserver observer;
+    private ItemTouchHelper mItemTouchHelper;
 
     // **************views*****************
     private View convertView;
     private RecyclerView recyclerView;
     private LinearLayout playTypeLayout;
-    private TextView playType, playEdit;
+    private TextView playType, playEdit, removeButton;
     private ImageView playTypeIcon;
 
     // **************基本数据*****************
@@ -110,6 +112,7 @@ public class MusicQueuePopup extends PopupWindow implements View.OnClickListener
         playTypeLayout = (LinearLayout) convertView.findViewById(R.id.ll_popup_music_queue_play_type);
         playType = (TextView) convertView.findViewById(R.id.tv_popup_music_queue_play_type);
         playEdit = (TextView) convertView.findViewById(R.id.tv_popup_music_queue_edit);
+        removeButton = (TextView) convertView.findViewById(R.id.tv_popup_music_queue_remove);
         playTypeIcon = (ImageView) convertView.findViewById(R.id.iv_popup_music_queue_play_type);
         // 1. 创建线性LayoutManager
         mLayoutManager = new LinearLayoutManager(mContext);
@@ -117,7 +120,7 @@ public class MusicQueuePopup extends PopupWindow implements View.OnClickListener
         // 2. 如果可以确定每个item的高度是固定的，设置这个选项可以提高性能
         recyclerView.setHasFixedSize(true);
         // 3. 创建并设置适配器
-        musicListAdapter = new PopupMusicListAdapter(mContext, musicFiles);
+        musicListAdapter = new PopupMusicListAdapter(mContext, musicFiles, this);
         musicListAdapter.setSelectedPos(currentIndex);
         recyclerView.setAdapter(musicListAdapter);
         // 4. 添加分割线
@@ -154,6 +157,29 @@ public class MusicQueuePopup extends PopupWindow implements View.OnClickListener
             }
         });
 
+        ItemTouchHelper.Callback callback = new SimpleItemTouchHelperCallback(musicListAdapter);
+        /*ItemTouchHelper.Callback callback = new ItemTouchHelper.Callback() {
+            @Override
+            public int getMovementFlags(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder) {
+                final int dragFlags = ItemTouchHelper.UP | ItemTouchHelper.DOWN;
+                final int swipeFlags = ItemTouchHelper.START | ItemTouchHelper.END;
+                return makeMovementFlags(dragFlags, swipeFlags);
+            }
+
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                Log.d("xuqiang", "---------onMove---------");
+                return true;
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                Log.d("xuqiang", "---------onSwiped---------");
+            }
+        };*/
+
+        mItemTouchHelper = new ItemTouchHelper(callback);
+        mItemTouchHelper.attachToRecyclerView(recyclerView);
     }
 
     private void initData() {
@@ -185,6 +211,7 @@ public class MusicQueuePopup extends PopupWindow implements View.OnClickListener
         });
         playTypeLayout.setOnClickListener(this);
         playEdit.setOnClickListener(this);
+        removeButton.setOnClickListener(this);
     }
 
     @Override
@@ -216,16 +243,31 @@ public class MusicQueuePopup extends PopupWindow implements View.OnClickListener
                 break;
             // 编辑播放列表
             case R.id.tv_popup_music_queue_edit:
-
                 if ("编辑".equals(playEdit.getText().toString())) {
                     playEdit.setText("完成");
+                    removeButton.setVisibility(View.VISIBLE);
                     musicListAdapter.notifyToEditMode(1);
-
                 } else {
                     playEdit.setText("编辑");
+                    removeButton.setVisibility(View.GONE);
                     musicListAdapter.notifyToEditMode(0);
                 }
-
+                break;
+            // 移除选中项
+            case R.id.tv_popup_music_queue_remove:
+                if (musicListAdapter.musicFiles != null) {
+                    boolean foo = false;
+                    for (int i = 0; i < musicListAdapter.musicFiles.size(); i++) {
+                        if (musicListAdapter.musicFiles.get(i).isChecked) {
+                            queueManager.removeFromQueue(musicListAdapter.musicFiles.get(i));
+                            foo = true;
+                        }
+                    }
+                    if (foo) {
+                        updateUI(queueManager.getCurrentMusic());
+                        musicListAdapter.updateList(queueManager.getDefaultQueue());
+                    }
+                }
                 break;
         }
     }
@@ -248,4 +290,9 @@ public class MusicQueuePopup extends PopupWindow implements View.OnClickListener
         updateUI(file);
     }
 
+    @Override
+    public void onStartDrag(RecyclerView.ViewHolder viewHolder) {
+        Log.d("xuqiang", "----------onStartDrag---------");
+        mItemTouchHelper.startDrag(viewHolder);
+    }
 }

@@ -62,18 +62,18 @@
         android:layout_centerVertical="true"
         android:background="?android:attr/selectableItemBackground"
         android:padding="8dp"
-        android:src="@mipmap/ic_close_gray"/>
+        android:src="@mipmap/ic_close_gray"
+        android:visibility="visible"/>
 
     <ImageView
         android:id="@+id/iv_item_popup_music_queue_select"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
+        android:layout_width="38dp"
+        android:layout_height="38dp"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_centerVertical="true"
-        android:background="?android:attr/selectableItemBackground"
         android:padding="8dp"
-        android:src="@mipmap/ic_play_list_select"
+        android:src="@mipmap/ic_reorder_grey_500_24dp"
         android:visibility="gone"/>
 
 </RelativeLayout>
