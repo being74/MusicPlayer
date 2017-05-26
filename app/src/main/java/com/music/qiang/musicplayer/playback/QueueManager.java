@@ -63,6 +63,14 @@ public class QueueManager {
         mCurrentMediaId = mQueue.get(mCurrentIndex).musicId;
     }
 
+    /**
+     * 设置重新排序序列的列表
+     * @param newQueue 排序后列表
+     */
+    public void swapQueue(List<MusicFile> newQueue) {
+        this.mQueue = newQueue;
+    }
+
     public void setCurrentQueue(List<MusicFile> newQueue) {
         setCurrentQueue(newQueue, null);
     }
