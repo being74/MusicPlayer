@@ -35,8 +35,11 @@ import org.greenrobot.eventbus.Subscribe;
 import org.greenrobot.eventbus.ThreadMode;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
+ * 播放列表弹出框
+ * <p/>
  * Created by xuqiang on 2017/5/8.
  */
 public class MusicQueuePopup extends PopupWindow implements View.OnClickListener, OnStartDragListener {
@@ -155,6 +158,16 @@ public class MusicQueuePopup extends PopupWindow implements View.OnClickListener
             public void onItemLongClickListener(View view, int position) {
 
             }
+
+            @Override
+            public void onListSwapListener(List<MusicFile> list) {
+                /**
+                 * 1.重新给播放列表赋值
+                 */
+                musicFiles = (ArrayList<MusicFile>) list;
+                /*queueManager.swapQueue(musicFiles);
+                updateUI(queueManager.getCurrentMusic());*/
+            }
         });
 
         ItemTouchHelper.Callback callback = new SimpleItemTouchHelperCallback(musicListAdapter);
@@ -177,7 +190,6 @@ public class MusicQueuePopup extends PopupWindow implements View.OnClickListener
                 Log.d("xuqiang", "---------onSwiped---------");
             }
         };*/
-
         mItemTouchHelper = new ItemTouchHelper(callback);
         mItemTouchHelper.attachToRecyclerView(recyclerView);
     }
@@ -251,6 +263,12 @@ public class MusicQueuePopup extends PopupWindow implements View.OnClickListener
                     playEdit.setText("编辑");
                     removeButton.setVisibility(View.GONE);
                     musicListAdapter.notifyToEditMode(0);
+                    /**
+                     * 1.给queueManager中播放列表赋值
+                     * 2.更新列表选中位置
+                     */
+                    queueManager.swapQueue(musicFiles);
+                    updateUI(queueManager.getCurrentMusic());
                 }
                 break;
             // 移除选中项
@@ -283,6 +301,7 @@ public class MusicQueuePopup extends PopupWindow implements View.OnClickListener
 
     /**
      * 当前播放变更时，对ui重新赋值
+     *
      * @param file
      */
     @Subscribe(threadMode = ThreadMode.POSTING)

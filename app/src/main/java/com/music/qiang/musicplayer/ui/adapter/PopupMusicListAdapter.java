@@ -58,6 +58,8 @@ public class PopupMusicListAdapter extends RecyclerView.Adapter<PopupMusicListAd
         void onItemClickListener(View view, int position);
 
         void onItemLongClickListener(View view, int position);
+
+        void onListSwapListener(List<MusicFile> list);
     }
 
     public void setOnItemClickListener(MyItemClickListener mOnItemClickListener) {
@@ -215,16 +217,9 @@ public class PopupMusicListAdapter extends RecyclerView.Adapter<PopupMusicListAd
 
     @Override
     public boolean onItemMove(int from, int to) {
-        if (from < to) {
-            for (int i = from; i < to; i++) {
-                Collections.swap(musicFiles, i, i + 1);
-            }
-        } else {
-            for (int i = from; i > to; i--) {
-                Collections.swap(musicFiles, i, i - 1);
-            }
-        }
+        Collections.swap(musicFiles, from, to);
         notifyItemMoved(from, to);
+        mOnItemClickListener.onListSwapListener(musicFiles);
         return true;
     }
 
