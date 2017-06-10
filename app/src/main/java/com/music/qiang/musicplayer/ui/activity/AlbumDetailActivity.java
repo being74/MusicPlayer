@@ -1,42 +1,52 @@
 package com.music.qiang.musicplayer.ui.activity;
 
+import android.content.ContentUris;
 import android.content.Intent;
 import android.database.Cursor;
+import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 
 import com.music.qiang.musicplayer.R;
 import com.music.qiang.musicplayer.model.MusicFile;
+import com.music.qiang.musicplayer.support.utils.StringUtils;
 import com.music.qiang.musicplayer.ui.adapter.MusicListAdapter;
+import com.music.qiang.musicplayer.ui.adapter.MusicListInNumberAdapter;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
 /**
  * 专辑详情页
  */
-public class AlbumDetailActivity extends BaseActivity {
+public class AlbumDetailActivity extends AppCompatActivity {
 
     // ****************Views*******************
     private Toolbar toolbar;
     private RecyclerView musicListView;
+    private ImageView albumBg;
 
     // ****************对象********************
     private RecyclerView.LayoutManager mLayoutManager;
-    private MusicListAdapter musicListAdapter;
+    private MusicListInNumberAdapter musicListAdapter;
     private ArrayList<MusicFile> musicFiles;
+    private Uri sArtworkUri = Uri.parse("content://media/external/audio/albumart");
+    private Uri uri;
     // ****************基本数据************
     private String albumName;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setView(R.layout.activity_album_detail, 0);
+        setContentView(R.layout.activity_album_detail);
 
         initViews();
         fetchIntent();
@@ -44,7 +54,25 @@ public class AlbumDetailActivity extends BaseActivity {
     }
 
     private void initViews() {
+        initToolbar();
         musicListView = (RecyclerView) findViewById(R.id.rv_activity_album_detail_list);
+        albumBg = (ImageView) findViewById(R.id.iv_activity_album_detail_bg);
+    }
+
+    /**
+     * 初始化toolbar
+     */
+    private void initToolbar() {
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setDisplayShowHomeEnabled(true);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
     }
 
     private void fetchIntent() {
@@ -54,6 +82,28 @@ public class AlbumDetailActivity extends BaseActivity {
     private void initData() {
         initRecyclerView();
         setTitle(albumName);
+        toolbar.setSubtitle(musicFiles.get(0).musicArtist);
+        if (!StringUtils.isNullOrEmpty(musicFiles.get(0).albumpic_big) || !StringUtils.isNullOrEmpty(musicFiles.get(0).albumpic_small)) {
+            if (!StringUtils.isNullOrEmpty(musicFiles.get(0).albumpic_big)) {
+                Picasso.with(this)
+                        .load(musicFiles.get(0).albumpic_big)
+                        .resize(StringUtils.dip2px(48), StringUtils.dip2px(48))
+                        .error(R.mipmap.ic_black_rubber)
+                        .into(albumBg);
+            } else {
+                Picasso.with(this)
+                        .load(musicFiles.get(0).albumpic_small)
+                        .resize(StringUtils.dip2px(48), StringUtils.dip2px(48))
+                        .error(R.mipmap.ic_black_rubber)
+                        .into(albumBg);
+            }
+        } else {
+            uri = ContentUris.withAppendedId(sArtworkUri, musicFiles.get(0).musicAlubmId);
+            Picasso.with(this)
+                    .load(uri)
+                    .error(R.mipmap.ic_black_rubber)
+                    .into(albumBg);
+        }
     }
 
     private void initRecyclerView() {
@@ -64,7 +114,7 @@ public class AlbumDetailActivity extends BaseActivity {
         musicListView.setHasFixedSize(true);
         // 3. 创建并设置适配器
         getMusicList();
-        musicListAdapter = new MusicListAdapter(this, musicFiles);
+        musicListAdapter = new MusicListInNumberAdapter(this, musicFiles);
         musicListView.setAdapter(musicListAdapter);
         // 4. 添加分割线
         DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(musicListView.getContext(),
@@ -72,7 +122,7 @@ public class AlbumDetailActivity extends BaseActivity {
         musicListView.addItemDecoration(dividerItemDecoration);
 
         // 5. 设置点击事件
-        musicListAdapter.setOnItemClickListener(new MusicListAdapter.MyItemClickListener() {
+        musicListAdapter.setOnItemClickListener(new MusicListInNumberAdapter.MyItemClickListener() {
             @Override
             public void onItemClickListener(View view, int position) {
                 Intent intent = new Intent(AlbumDetailActivity.this, MusicPlayActivity.class);
@@ -100,7 +150,7 @@ public class AlbumDetailActivity extends BaseActivity {
         if (albumName.contains("'")) {
             condition = MediaStore.Audio.Media.ALBUM + "=\"" + albumName + "\"";
         }
-        Cursor cursor = getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, condition , null, MediaStore.Audio.Media.DEFAULT_SORT_ORDER);
+        Cursor cursor = getContentResolver().query(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, null, condition, null, MediaStore.Audio.Media.DEFAULT_SORT_ORDER);
         if (cursor.moveToFirst()) {
 
         }

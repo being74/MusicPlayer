@@ -14,6 +14,7 @@ import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.Window;
@@ -306,6 +307,7 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
     }
 
     private void refreshUI(MusicFile file) {
+        Log.d("xuqiang", "---------MusicPlayActivity  refreshUI--------" + file.musicName);
         setBlurBackground(file);
 
         toolbar.setTitle(file.musicName);
@@ -342,7 +344,7 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
                             .into(roundImageView);
                 }
             } else {
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), ContentUris.withAppendedId(sArtworkUri, file.musicAlubmId));
+                //Bitmap bitmap = MediaStore.Images.Media.getBitmap(this.getContentResolver(), ContentUris.withAppendedId(sArtworkUri, file.musicAlubmId));
                 //roundImageView.setImageBitmap(bitmap);
                 //final Bitmap blurBmp = BlurUtil.fastblur(this, bitmap, 25);//0-25，表示模糊值
                 //final Bitmap blurBmp = FastBlurUtil.doBlur(bitmap, 8, false);//0-25，表示模糊值
@@ -350,11 +352,12 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
                 Picasso.with(this)
                         .load(ContentUris.withAppendedId(sArtworkUri, file.musicAlubmId))
                         .into(roundImageView);
+                Log.d("xuqiang", ContentUris.withAppendedId(sArtworkUri, file.musicAlubmId).toString());
             }
             if (roundImageView.getVisibility() != View.VISIBLE) {
                 roundImageView.setVisibility(View.VISIBLE);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             roundImageView.setVisibility(View.GONE);
         }
