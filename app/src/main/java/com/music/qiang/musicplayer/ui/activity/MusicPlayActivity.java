@@ -372,7 +372,7 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
         rubberRotation = ObjectAnimator.ofFloat(rubberLayout, "Rotation",
                 currentRotationValue - 360, currentRotationValue);
         // 设置持续时间
-        rubberRotation.setDuration(35000);
+        rubberRotation.setDuration(40000);
         // 设置循环播放
         rubberRotation.setRepeatCount(ObjectAnimator.INFINITE);
         rubberRotation.setInterpolator(new LinearInterpolator());
