@@ -155,6 +155,9 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
         intent.putExtras(bundle);
         startService(intent);
 
+        Log.d("xuqiang", "this is stash test");
+        Log.d("xuqiang", "哈哈哈");
+        Log.d("xuqiang", "fix1");
     }
 
     @Override
