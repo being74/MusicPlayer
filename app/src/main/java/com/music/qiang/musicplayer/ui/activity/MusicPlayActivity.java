@@ -374,7 +374,7 @@ public class MusicPlayActivity extends AppCompatActivity implements View.OnClick
         // 设置动画，从上次停止位置开始,这里是顺时针旋转360度
         rubberRotation = ObjectAnimator.ofFloat(rubberLayout, "Rotation",
                 currentRotationValue - 360, currentRotationValue);
-        // 设置持续时间
+        // 设置持续时间 dev set 50000
         rubberRotation.setDuration(45000);
         // 设置循环播放
         rubberRotation.setRepeatCount(ObjectAnimator.INFINITE);
