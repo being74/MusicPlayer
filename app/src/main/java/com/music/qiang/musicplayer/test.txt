@@ -4,3 +4,4 @@ line3
 line4 amend
 line5
 line6 amend
+line7
